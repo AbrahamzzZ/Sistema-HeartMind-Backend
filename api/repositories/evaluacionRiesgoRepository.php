@@ -59,10 +59,10 @@ class EvaluacionRiesgoRepository
             'presion_sistolica' => $evaluacion->presionSistolica,
             'presion_diastolica' => $evaluacion->presionDiastolica,
             'nivel_colesterol' => $evaluacion->nivelColesterol,
-            'fumador' => $evaluacion->fumador,
-            'diabetico' => $evaluacion->diabetico,
-            'actividad_fisica' => $evaluacion->actividadFisica,
-            'antecedentes_familiares' => $evaluacion->antecedentesFamiliares,
+            'fumador' => (int) $evaluacion->fumador,
+            'diabetico' =>  (int) $evaluacion->diabetico,
+            'actividad_fisica' => (int) $evaluacion->actividadFisica,
+            'antecedentes_familiares' => (int) $evaluacion->antecedentesFamiliares,
             'puntaje' => $evaluacion->puntaje,
             'resultado_riesgo' => $evaluacion->resultadoRiesgo
         ]);
