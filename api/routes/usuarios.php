@@ -1,27 +1,51 @@
 <?php
 
 require_once __DIR__ . '/../config/conexion.php';
-
 require_once __DIR__ . '/../models/usuario.php';
-
 require_once __DIR__ . '/../repositories/usuarioRepository.php';
-
 require_once __DIR__ . '/../services/usuarioService.php';
-
 require_once __DIR__ . '/../controllers/usuarioController.php';
+require_once __DIR__ . '/../helpers/JwtHelper.php';
+require_once __DIR__ . '/../middleware/authMiddleware.php';
 
-$repository = new UsuarioRepository($pdo);
-
-$service = new UsuarioService(
-    $repository
-);
-
-$controller = new UsuarioController(
-    $service
-);
-
+$db = Conexion::obtenerConexion();
+$repository = new UsuarioRepository($db);
+$service = new UsuarioService($repository);
+$controller = new UsuarioController($service);
 $method = $_SERVER['REQUEST_METHOD'];
+$accion = $_GET['accion'] ?? null;
 
-if ($method === 'POST') {
-    $controller->registrar();
+switch ($method) {
+
+    case 'GET':
+        if (isset($_GET['id'])) {
+            $controller->obtenerUsuario((int) $_GET['id']);
+        }elseif ($accion === 'perfil') {
+            $controller->obtenerPerfil();
+        }
+        break;
+
+    case 'POST':
+        switch ($accion) {
+            case 'registro':
+                $controller->registrar();
+                break;
+            
+            case 'login':
+                $controller->login();
+                break;
+
+            default:
+                http_response_code(400);
+                echo json_encode([
+                    'message' => 'Acción inválida.'
+                ]);
+        }
+        break;
+
+    default:
+        http_response_code(405);
+        echo json_encode([
+            'message' => 'Método no permitido.'
+        ]);
 }
