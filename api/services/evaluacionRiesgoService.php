@@ -1,32 +1,44 @@
 <?php
 
+require_once __DIR__ . '/../models/EvaluacionRiesgo.php';
+require_once __DIR__ . '/../repositories/EvaluacionRiesgoRepository.php';
+
 class EvaluacionRiesgoService
 {
-    public function evaluar(array $datos): array
-    {
-        $imc = $this->calcularImc(
-            $datos['peso'],
-            $datos['altura']
-        );
+    private EvaluacionRiesgoRepository $repository;
 
-        $puntaje = $this->calcularPuntaje(
-            edad: $datos['edad'],
-            imc: $imc,
-            presionSistolica: $datos['presionSistolica'],
-            nivelColesterol: $datos['nivelColesterol'],
-            fumador: $datos['fumador'],
-            diabetico: $datos['diabetico'],
-            actividadFisica: $datos['actividadFisica'],
-            antecedentesFamiliares: $datos['antecedentesFamiliares']
-        );
+    public function __construct(
+        EvaluacionRiesgoRepository $repository
+    ) {
+        $this->repository = $repository;
+    }
 
-        $riesgo = $this->determinarRiesgo(
-            $puntaje
-        );
+    public function evaluar(
+        array $datos
+    ): array {
 
-        $recomendaciones = $this->generarRecomendaciones(
-            $riesgo
-        );
+        $imc = $this->calcularImc($datos['peso'], $datos['altura']);
+        $puntaje = $this->calcularPuntaje($datos, $imc);
+        $riesgo = $this->determinarRiesgo($puntaje);
+        $recomendaciones = $this->generarRecomendaciones($riesgo);
+        $evaluacion = new EvaluacionRiesgo([
+            'usuarioId' => $datos['usuarioId'],
+            'edad' => $datos['edad'],
+            'peso' => $datos['peso'],
+            'altura' => $datos['altura'],
+            'imc' => $imc,
+            'presionSistolica' => $datos['presionSistolica'],
+            'presionDiastolica' => $datos['presionDiastolica'],
+            'nivelColesterol' => $datos['nivelColesterol'],
+            'fumador' => $datos['fumador'],
+            'diabetico' => $datos['diabetico'],
+            'actividadFisica' => $datos['actividadFisica'],
+            'antecedentesFamiliares' => $datos['antecedentesFamiliares'],
+            'puntaje' => $puntaje,
+            'resultadoRiesgo' => $riesgo
+        ]);
+
+        $this->repository->guardar($evaluacion);
 
         return [
             'imc' => $imc,
@@ -36,34 +48,32 @@ class EvaluacionRiesgoService
         ];
     }
 
+    public function obtenerHistorial(
+        int $usuarioId
+    ): array {
+
+        return $this->repository->obtenerPorUsuario($usuarioId);
+    }
+
     private function calcularImc(
         float $peso,
         float $altura
-    ): float
-    {
-        return round(
-            $peso / ($altura * $altura),
-            2
-        );
+    ): float {
+
+        return round($peso / ($altura * $altura), 2);
     }
 
     private function calcularPuntaje(
-        int $edad,
-        float $imc,
-        int $presionSistolica,
-        float $nivelColesterol,
-        bool $fumador,
-        bool $diabetico,
-        bool $actividadFisica,
-        bool $antecedentesFamiliares
-    ): int
-    {
+        array $datos,
+        float $imc
+    ): int {
+
         $puntaje = 0;
 
         // Edad
-        if ($edad >= 60) {
+        if ($datos['edad'] >= 60) {
             $puntaje += 3;
-        } elseif ($edad >= 40) {
+        } elseif ($datos['edad'] >= 40) {
             $puntaje += 2;
         }
 
@@ -75,34 +85,34 @@ class EvaluacionRiesgoService
         }
 
         // Presión arterial
-        if ($presionSistolica >= 140) {
+        if ($datos['presionSistolica'] >= 140) {
             $puntaje += 2;
-        } elseif ($presionSistolica >= 120) {
+        } elseif ($datos['presionSistolica'] >= 120) {
             $puntaje += 1;
         }
 
         // Colesterol
-        if ($nivelColesterol >= 200) {
+        if ($datos['nivelColesterol'] >= 200) {
             $puntaje += 2;
         }
 
         // Fumador
-        if ($fumador) {
+        if ($datos['fumador']) {
             $puntaje += 3;
         }
 
         // Diabético
-        if ($diabetico) {
+        if ($datos['diabetico']) {
             $puntaje += 3;
         }
 
         // Actividad física
-        if (!$actividadFisica) {
+        if (!$datos['actividadFisica']) {
             $puntaje += 2;
         }
 
         // Antecedentes familiares
-        if ($antecedentesFamiliares) {
+        if ($datos['antecedentesFamiliares']) {
             $puntaje += 2;
         }
 
@@ -111,8 +121,8 @@ class EvaluacionRiesgoService
 
     private function determinarRiesgo(
         int $puntaje
-    ): string
-    {
+    ): string {
+
         if ($puntaje <= 5) {
             return 'Bajo';
         }
@@ -126,9 +136,10 @@ class EvaluacionRiesgoService
 
     private function generarRecomendaciones(
         string $riesgo
-    ): array
-    {
+    ): array {
+
         return match ($riesgo) {
+
             'Bajo' => [
                 'Mantenga hábitos saludables.',
                 'Realice controles médicos periódicos.',
