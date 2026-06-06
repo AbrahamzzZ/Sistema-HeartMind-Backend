@@ -23,6 +23,13 @@ services:
       - "8082:80"
     volumes:
       - ./api:/var/www/html
+
+    environment:
+      DB_HOST: mysql
+      DB_NAME: cardiovascular_db
+      DB_USER: root
+      DB_PASSWORD: root123
+      
     depends_on:
       - mysql
 
