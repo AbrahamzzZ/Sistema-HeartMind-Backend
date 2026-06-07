@@ -10,6 +10,10 @@ require_once __DIR__ . '/../models/opcionRespuesta.php';
 require_once __DIR__ . '/../models/preguntaCuestionario.php';
 require_once __DIR__ . '/../models/resultadoCuestionario.php';
 
+require_once __DIR__ . '/../validator/cuestionarioValidator.php';
+require_once __DIR__ . '/../validator/preguntaValidator.php';
+require_once __DIR__ . '/../validator/opcionValidator.php';
+
 
 class CuestionarioService
 {
@@ -17,6 +21,9 @@ class CuestionarioService
     private PreguntaCuestionarioRepository $preguntaRepository;
     private OpcionRespuestaRepository $opcionRepository;
     private ResultadoCuestionarioRepository $resultadoRepository;
+    private CuestionarioValidator $cuestionarioValidator;
+    private PreguntaValidator $preguntaValidator;
+    private OpcionValidator $opcionValidator;
 
     public function __construct(
         CuestionarioRepository $cuestionarioRepository,
@@ -28,6 +35,9 @@ class CuestionarioService
         $this->preguntaRepository = $preguntaRepository;
         $this->opcionRepository = $opcionRepository;
         $this->resultadoRepository = $resultadoRepository;
+        $this->cuestionarioValidator = new CuestionarioValidator();
+        $this->preguntaValidator = new PreguntaValidator();
+        $this->opcionValidator = new OpcionValidator();
     }
 
     public function obtenerCuestionarios(): array
@@ -98,35 +108,180 @@ class CuestionarioService
     }
 
 
-    public function crearCuestionario(
-        Cuestionario $cuestionario
-    ): bool {
-        return $this->cuestionarioRepository->crear($cuestionario);
+    public function crearCuestionario(Cuestionario $cuestionario): array
+    {
+        $validacion = $this->validarCuestionario($cuestionario);
+
+        if (!$validacion['success']) {
+            return $validacion;
+        }
+
+        $resultado = $this->cuestionarioRepository->crear($cuestionario);
+
+        return [
+            'success' => $resultado,
+            'message' => $resultado ? 'Cuestionario creado correctamente.' : 'No se pudo registrar el cuestionario.'
+        ];
     }
 
-    public function actualizarCuestionario(
-        Cuestionario $cuestionario
-    ): bool {
-        return $this->cuestionarioRepository->actualizar($cuestionario);
+    public function actualizarCuestionario(Cuestionario $cuestionario): array
+    {
+        if (!$cuestionario->id || $cuestionario->id <= 0) {
+            return [
+                'success' => false,
+                'message' => 'ID de cuestionario inválido.'
+            ];
+        }
+        
+        $existe = $this->cuestionarioRepository->obtenerPorId($cuestionario->id);
+        
+        if (!$existe) {
+            return [
+                'success' => false,
+                'message' => 'Cuestionario no encontrado.'
+            ];
+        }
+
+        $validacion = $this->validarCuestionario($cuestionario, $cuestionario->id);
+
+        if (!$validacion['success']) {
+            return $validacion;
+        }
+
+        $resultado = $this->cuestionarioRepository->actualizar($cuestionario);
+        
+        return [
+            'success' => $resultado,
+            'message' => $resultado ? 'Cuestionario actualizado correctamente.' : 'No se pudo actualizar el cuestionario.'
+        ];
     }
 
-    public function eliminarCuestionario(
-        int $id
-    ): bool {
-        return $this->cuestionarioRepository->eliminar($id);
+    private function validarCuestionario(Cuestionario $cuestionario, ?int $excluirId = null): array
+    {
+        $datos = [
+            'titulo' => trim($cuestionario->titulo ?? ''),
+            'descripcion' => trim($cuestionario->descripcion ?? '')
+        ];
+
+        if (!$this->cuestionarioValidator->validate($datos)) {
+            return [
+                'success' => false,
+                'errors' => $this->cuestionarioValidator->getErrors(),
+                'message' => 'Error de validación: ' . implode(', ', $this->cuestionarioValidator->getErrors())
+            ];
+        }
+
+        $cuestionario->titulo = $datos['titulo'];
+        $cuestionario->descripcion = $datos['descripcion'];
+
+        if ($this->cuestionarioRepository->existePorTitulo($datos['titulo'], $excluirId)) {
+            return [
+                'success' => false,
+                'errors' => ["Ya existe un cuestionario con el título '{$datos['titulo']}'."],
+                'message' => 'Error de validación: Ya existe un cuestionario con el título proporcionado.'
+            ];
+        }
+
+        return [
+            'success' => true
+        ];
+    }
+
+    public function eliminarCuestionario(int $id): array
+    {
+        if ($id <= 0) {
+            return [
+                'success' => false,
+                'message' => 'ID de cuestionario inválido.'
+            ];
+        }
+        
+        $existe = $this->cuestionarioRepository->obtenerPorId($id);
+        
+        if (!$existe) {
+            return [
+                'success' => false,
+                'message' => 'Cuestionario no encontrado.'
+            ];
+        }
+        
+        $resultado = $this->cuestionarioRepository->eliminar($id);
+        
+        return [
+            'success' => $resultado,
+            'message' => $resultado ? 'Cuestionario eliminado correctamente.' : 'Error al eliminar el cuestionario.'
+        ];
     }
 
 
     public function crearPregunta(
         PreguntaCuestionario $pregunta
-    ): bool {
-        return $this->preguntaRepository->crear($pregunta);
+    ): array {
+        $validacion = $this->validarPregunta($pregunta);
+
+        if (!$validacion['success']) {
+            return $validacion;
+        }
+
+        $cuestionario = $this->cuestionarioRepository->obtenerPorId($pregunta->cuestionarioId);
+        if (!$cuestionario) {
+            return [
+                'success' => false,
+                'message' => 'El id de cuestionario proporcionado no existe.'
+            ];
+        }
+
+        try {
+            $resultado = $this->preguntaRepository->crear($pregunta);
+        } catch (PDOException $e) {
+            return [
+                'success' => false,
+                'message' => 'Error en la base de datos al crear la pregunta.'
+            ];
+        }
+
+        return [
+            'success' => $resultado,
+            'message' => $resultado ? 'Pregunta creada correctamente.' : 'No se pudo registrar la pregunta.'
+        ];
     }
 
     public function actualizarPregunta(
         PreguntaCuestionario $pregunta
-    ): bool {
-        return $this->preguntaRepository->actualizar($pregunta);
+    ): array {
+        if (!$pregunta->id || $pregunta->id <= 0) {
+            return [
+                'success' => false,
+                'message' => 'ID de pregunta inválido.'
+            ];
+        }
+        $existe = $this->preguntaRepository->obtenerPorId($pregunta->id);
+        if (!$existe) {
+            return [
+                'success' => false,
+                'message' => 'Pregunta no encontrada.'
+            ];
+        }
+
+        $validacion = $this->validarPregunta($pregunta);
+
+        if (!$validacion['success']) {
+            return $validacion;
+        }
+
+        try {
+            $resultado = $this->preguntaRepository->actualizar($pregunta);
+        } catch (PDOException $e) {
+            return [
+                'success' => false,
+                'message' => 'Error en la base de datos al actualizar la pregunta.'
+            ];
+        }
+
+        return [
+            'success' => $resultado,
+            'message' => $resultado ? 'Pregunta actualizada correctamente.' : 'No se pudo actualizar la pregunta.'
+        ];
     }
 
     public function eliminarPregunta(
@@ -135,23 +290,215 @@ class CuestionarioService
         return $this->preguntaRepository->eliminar($id);
     }
 
+    private function validarPregunta(PreguntaCuestionario $pregunta): array
+    {
+        $datos = [
+            'pregunta' => trim($pregunta->pregunta ?? ''),
+            'cuestionarioId' => $pregunta->cuestionarioId ?? 0
+        ];
+
+        if (!$this->preguntaValidator->validate($datos)) {
+            return [
+                'success' => false,
+                'errors' => $this->preguntaValidator->getErrors(),
+                'message' => 'Error de validación: ' . implode(', ', $this->preguntaValidator->getErrors())
+            ];
+        }
+
+        $pregunta->pregunta = $datos['pregunta'];
+
+        return [
+            'success' => true
+        ];
+    }
+
 
     public function crearOpcion(
         OpcionRespuesta $opcion
-    ): bool {
-        return $this->opcionRepository->crear($opcion);
+    ): array {
+        $validacion = $this->validarOpcion($opcion);
+
+        if (!$validacion['success']) {
+            return $validacion;
+        }
+
+        $preg = $this->preguntaRepository->obtenerPorId($opcion->preguntaId);
+        if (!$preg) {
+            return [
+                'success' => false,
+                'message' => 'La pregunta asociada no existe.'
+            ];
+        }
+
+        if ($this->opcionRepository->existePorTexto($opcion->textoOpcion, $opcion->preguntaId)) {
+            return [
+                'success' => false,
+                'errors' => ["Ya existe una opción con el mismo texto para esta pregunta."],
+                'message' => 'Error de validación: opción duplicada.'
+            ];
+        }
+
+        $opcionesExistentes = $this->opcionRepository->obtenerPorPregunta($opcion->preguntaId);
+        if (count($opcionesExistentes) >= 6) {
+            return [
+                'success' => false,
+                'message' => 'No se pueden agregar más de 6 opciones a una pregunta.'
+            ];
+        }
+
+        $opcion->esCorrecta = $opcion->esCorrecta ? 1 : 0;
+
+        try {
+            if ($opcion->esCorrecta) {
+                $this->opcionRepository->beginTransaction();
+                $this->opcionRepository->unsetCorrectasByPregunta($opcion->preguntaId);
+                $created = $this->opcionRepository->crear($opcion);
+                if (!$created) {
+                    $this->opcionRepository->rollBack();
+                    return [
+                        'success' => false,
+                        'message' => 'No se pudo registrar la opción.'
+                    ];
+                }
+                $this->opcionRepository->commit();
+                $resultado = $created;
+            } else {
+                $resultado = $this->opcionRepository->crear($opcion);
+            }
+        } catch (PDOException $e) {
+            try { $this->opcionRepository->rollBack(); } catch (Exception $ex) {}
+            return [
+                'success' => false,
+                'message' => 'Error en la base de datos al crear la opción: ' . $e->getMessage()
+            ];
+        }
+
+        return [
+            'success' => $resultado,
+            'message' => $resultado ? 'Opción creada correctamente.' : 'No se pudo registrar la opción.'
+        ];
     }
 
     public function actualizarOpcion(
         OpcionRespuesta $opcion
-    ): bool {
-        return $this->opcionRepository->actualizar($opcion);
+    ): array {
+        if (!$opcion->id || $opcion->id <= 0) {
+            return [
+                'success' => false,
+                'message' => 'ID de opción inválido.'
+            ];
+        }
+
+        $validacion = $this->validarOpcion($opcion);
+
+        if (!$validacion['success']) {
+            return $validacion;
+        }
+
+        $preg = $this->preguntaRepository->obtenerPorId($opcion->preguntaId);
+        if (!$preg) {
+            return [
+                'success' => false,
+                'message' => 'La pregunta asociada no existe.'
+            ];
+        }
+
+        if ($this->opcionRepository->existePorTexto($opcion->textoOpcion, $opcion->preguntaId, $opcion->id)) {
+            return [
+                'success' => false,
+                'errors' => ["Ya existe otra opción con el mismo texto para esta pregunta."],
+                'message' => 'Error de validación: opción duplicada.'
+            ];
+        }
+
+        $opcion->esCorrecta = $opcion->esCorrecta ? 1 : 0;
+
+        try {
+            if ($opcion->esCorrecta) {
+                $this->opcionRepository->beginTransaction();
+                $this->opcionRepository->unsetCorrectasByPregunta($opcion->preguntaId, $opcion->id);
+                $updated = $this->opcionRepository->actualizar($opcion);
+                if (!$updated) {
+                    $this->opcionRepository->rollBack();
+                    return [
+                        'success' => false,
+                        'message' => 'No se pudo actualizar la opción.'
+                    ];
+                }
+                $this->opcionRepository->commit();
+                $resultado = $updated;
+            } else {
+                $resultado = $this->opcionRepository->actualizar($opcion);
+            }
+        } catch (PDOException $e) {
+            try { $this->opcionRepository->rollBack(); } catch (Exception $ex) {}
+            return [
+                'success' => false,
+                'message' => 'Error en la base de datos al actualizar la opción: ' . $e->getMessage()
+            ];
+        }
+
+        return [
+            'success' => $resultado,
+            'message' => $resultado ? 'Opción actualizada correctamente.' : 'No se pudo actualizar la opción.'
+        ];
     }
 
     public function eliminarOpcion(
         int $id
-    ): bool {
-        return $this->opcionRepository->eliminar($id);
+    ): array {
+        $op = $this->opcionRepository->obtenerPorId($id);
+        if (!$op) {
+            return [
+                'success' => false,
+                'message' => 'Opción no encontrada.'
+            ];
+        }
+
+        $preguntaId = (int)$op['pregunta_id'];
+        $opciones = $this->opcionRepository->obtenerPorPregunta($preguntaId);
+        if (count($opciones) <= 2) {
+            return [
+                'success' => false,
+                'message' => 'No se puede eliminar la opción: una pregunta debe tener al menos 2 opciones.'
+            ];
+        }
+
+        try {
+            $resultado = $this->opcionRepository->eliminar($id);
+        } catch (PDOException $e) {
+            return [
+                'success' => false,
+                'message' => 'Error en la base de datos al eliminar la opción.'
+            ];
+        }
+
+        return [
+            'success' => $resultado,
+            'message' => $resultado ? 'Opción eliminada correctamente.' : 'No se pudo eliminar la opción.'
+        ];
+    }
+    
+    private function validarOpcion(OpcionRespuesta $opcion): array
+    {
+        $datos = [
+            'texto' => trim($opcion->textoOpcion ?? ''),
+            'preguntaId' => $opcion->preguntaId ?? 0
+        ];
+
+        if (!$this->opcionValidator->validate($datos)) {
+            return [
+                'success' => false,
+                'errors' => $this->opcionValidator->getErrors(),
+                'message' => 'Error de validación: ' . implode(', ', $this->opcionValidator->getErrors())
+            ];
+        }
+
+        $opcion->textoOpcion = $datos['texto'];
+
+        return [
+            'success' => true
+        ];
     }
     
 

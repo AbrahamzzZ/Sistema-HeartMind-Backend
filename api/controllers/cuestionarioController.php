@@ -110,17 +110,41 @@ class CuestionarioController
     {
         header(self::CONTENT_TYPE_JSON);
 
-        $datos = json_decode(
-            file_get_contents(self::FILE_GET_CONTENTS),
-            true
-        );
+        try{
+            $datos = json_decode(
+                file_get_contents(self::FILE_GET_CONTENTS),
+                true
+            );
 
-        $cuestionario = new Cuestionario($datos);
-        $resultado = $this->service->crearCuestionario($cuestionario);
+            if (!$datos) {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'No se recibieron datos válidos.'
+                ]);
+                return;
+            }
 
-        echo json_encode([
-            'success' => $resultado
-        ]);
+            
+            $cuestionario = new Cuestionario($datos);
+            $resultado = $this->service->crearCuestionario($cuestionario);
+            
+            if (!$resultado['success']) {
+                http_response_code(400);
+                echo json_encode($resultado);
+                return;
+            }
+            
+            http_response_code(201);
+            echo json_encode($resultado);
+
+        } catch (Exception $e){
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function actualizarCuestionario(): void
@@ -132,12 +156,25 @@ class CuestionarioController
             true
         );
 
-        $cuestionario = new Cuestionario( $datos);
+        if (!$datos) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => 'No se recibieron datos válidos.'
+            ]);
+            return;
+        }
+
+        $cuestionario = new Cuestionario($datos);
         $resultado = $this->service->actualizarCuestionario($cuestionario);
 
-        echo json_encode([
-            'success' => $resultado
-        ]);
+        if (!$resultado['success']) {
+            http_response_code(400);
+            echo json_encode($resultado);
+            return;
+        }
+
+        echo json_encode($resultado);
     }
 
     public function eliminarCuestionario(
@@ -148,9 +185,13 @@ class CuestionarioController
 
         $resultado = $this->service->eliminarCuestionario($id);
 
-        echo json_encode([
-            'success' => $resultado
-        ]);
+        if (!$resultado['success']) {
+            http_response_code(404);
+            echo json_encode($resultado);
+            return;
+        }
+
+        echo json_encode($resultado);
     }
 
     // PREGUNTAS
@@ -164,12 +205,26 @@ class CuestionarioController
             true
         );
 
+        if (!$datos) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => 'No se recibieron datos válidos.'
+            ]);
+            return;
+        }
+
         $pregunta = new PreguntaCuestionario($datos);
         $resultado = $this->service->crearPregunta($pregunta);
 
-        echo json_encode([
-            'success' => $resultado
-        ]);
+        if (!$resultado['success']) {
+            http_response_code(400);
+            echo json_encode($resultado);
+            return;
+        }
+
+        http_response_code(201);
+        echo json_encode($resultado);
     }
 
     public function actualizarPregunta(): void
@@ -181,12 +236,25 @@ class CuestionarioController
             true
         );
 
+        if (!$datos) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => 'No se recibieron datos válidos.'
+            ]);
+            return;
+        }
+
         $pregunta = new PreguntaCuestionario($datos);
         $resultado = $this->service->actualizarPregunta($pregunta);
 
-        echo json_encode([
-            'success' => $resultado
-        ]);
+        if (!$resultado['success']) {
+            http_response_code(400);
+            echo json_encode($resultado);
+            return;
+        }
+
+        echo json_encode($resultado);
     }
 
     public function eliminarPregunta(
@@ -197,8 +265,20 @@ class CuestionarioController
 
         $resultado = $this->service->eliminarPregunta($id);
 
+        if(!$resultado){
+            http_response_code(404);
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Pregunta no encontrada.'
+            ]);
+
+            return;
+        }
+
         echo json_encode([
-            'success' => $resultado
+            'success' => true,
+            'message' => 'Pregunta eliminada correctamente.'
         ]);
     }
 
@@ -213,12 +293,26 @@ class CuestionarioController
             true
         );
 
+        if (!$datos) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => 'No se recibieron datos válidos.'
+            ]);
+            return;
+        }
+
         $opcion = new OpcionRespuesta($datos);
         $resultado = $this->service->crearOpcion($opcion);
 
-        echo json_encode([
-            'success' => $resultado
-        ]);
+        if (!$resultado['success']) {
+            http_response_code(400);
+            echo json_encode($resultado);
+            return;
+        }
+
+        http_response_code(201);
+        echo json_encode($resultado);
     }
 
     public function actualizarOpcion(): void
@@ -230,12 +324,25 @@ class CuestionarioController
             true
         );
 
+        if (!$datos) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => 'No se recibieron datos válidos.'
+            ]);
+            return;
+        }
+
         $opcion = new OpcionRespuesta($datos);
         $resultado = $this->service->actualizarOpcion($opcion);
 
-        echo json_encode([
-            'success' => $resultado
-        ]);
+        if (!$resultado['success']) {
+            http_response_code(400);
+            echo json_encode($resultado);
+            return;
+        }
+
+        echo json_encode($resultado);
     }
 
     public function eliminarOpcion(
@@ -245,9 +352,12 @@ class CuestionarioController
         header(self::CONTENT_TYPE_JSON);
 
         $resultado = $this->service->eliminarOpcion($id);
+        if (!$resultado['success']) {
+            http_response_code(400);
+            echo json_encode($resultado);
+            return;
+        }
 
-        echo json_encode([
-            'success' => $resultado
-        ]);
+        echo json_encode($resultado);
     }
 }

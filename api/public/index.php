@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../vendor/autoload.php';
+
 $ruta = $_GET['ruta'] ?? '';
 
 switch ($ruta) {
@@ -10,6 +12,10 @@ switch ($ruta) {
 
     case 'evaluaciones':
         require_once __DIR__ . '/../routes/evaluaciones.php';
+        break;
+
+    case 'cuestionarios':
+        require_once __DIR__ . '/../routes/cuestionarios.php';
         break;
 
     default:

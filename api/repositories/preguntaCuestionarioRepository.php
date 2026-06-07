@@ -81,9 +81,26 @@ class PreguntaCuestionarioRepository
         ";
 
         $stmt = $this->db->prepare($sql);
-
-        return $stmt->execute([
+        $stmt->execute([
             'id' => $id
         ]);
+
+        return $stmt->rowCount() > 0;
+    }
+
+    public function obtenerPorId(int $id): ?array
+    {
+        $sql = "
+            SELECT *
+            FROM preguntas_cuestionario
+            WHERE id = :id
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
     }
 }

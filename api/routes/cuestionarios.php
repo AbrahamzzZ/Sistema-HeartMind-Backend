@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../config/conexion.php';
+require_once __DIR__ . '/../helpers/JwtHelper.php';
+require_once __DIR__ . '/../middleware/authMiddleware.php';
 
 require_once __DIR__ . '/../models/cuestionario.php';
 require_once __DIR__ . '/../models/preguntaCuestionario.php';
@@ -26,18 +28,27 @@ $controller = new CuestionarioController($service);
 $method = $_SERVER['REQUEST_METHOD'];
 $accion = $_GET['accion'] ?? null;
 
+try {
+    AuthMiddleware::validarToken();
+} catch (Exception $e) {
+    http_response_code(401);
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
+    return;
+}
+
 switch ($method) {
 
     case 'GET':
 
         if (isset($_GET['id'])) {
-
             $controller->obtenerCuestionario(
                 (int) $_GET['id']
             );
 
         } elseif (isset($_GET['usuarioId'])) {
-
             $controller->obtenerHistorial(
                 (int) $_GET['usuarioId']
             );

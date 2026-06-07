@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../helpers/JwtHelper.php';
+use Firebase\JWT\ExpiredException;
+use Firebase\JWT\SignatureInvalidException;
 
 class AuthMiddleware
 {
@@ -8,16 +10,24 @@ class AuthMiddleware
     {
         $headers = getallheaders();
 
-        if (
-            !isset($headers['Authorization'])
-        ) {
-            throw new Exception(
-                'Token no proporcionado.'
-            );
+        if (empty($headers['Authorization'])) {
+            throw new Exception('Token no proporcionado.');
         }
 
-        $token = str_replace('Bearer ', '', $headers['Authorization']);
+        $token = trim(str_replace('Bearer ', '', $headers['Authorization']));
 
-        return JwtHelper::validarToken($token);
+        if (!$token) {
+            throw new Exception('Token no proporcionado.');
+        }
+
+        try {
+            return JwtHelper::validarToken($token);
+        } catch (ExpiredException $e) {
+            throw new Exception('Token expirado.');
+        } catch (SignatureInvalidException $e) {
+            throw new Exception('Token inválido.');
+        } catch (Exception $e) {
+            throw new Exception('Token inválido.');
+        }
     }
 }
