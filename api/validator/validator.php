@@ -54,6 +54,15 @@ abstract class Validator
         }
         return true;
     }
+
+    protected function validateUrl(string $url): bool
+    {
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            $this->addError("El campo 'url' no tiene un formato válido.");
+            return false;
+        }
+        return true;
+    }
     
     protected function validateNumeric(int $value, string $fieldName): bool
     {
