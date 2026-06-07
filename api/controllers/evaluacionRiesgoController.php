@@ -48,9 +48,15 @@ class EvaluacionRiesgoController
 
         $evaluaciones = $this->service->obtenerHistorial($usuarioId);
 
-        echo json_encode([
+        $response = [
             'success' => true,
             'data' => $evaluaciones
-        ]);
+        ];
+
+        if (empty($evaluaciones)) {
+            $response['message'] = 'No hay información que mostrar.';
+        }
+
+        echo json_encode($response);
     }
 }

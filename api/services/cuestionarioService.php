@@ -76,22 +76,74 @@ class CuestionarioService
         array $respuestas
     ): array {
 
+        if ($usuarioId <= 0 || $cuestionarioId <= 0) {
+            return [
+                'success' => false,
+                'message' => 'Usuario o cuestionario inválido.'
+            ];
+        }
+
+        $cuestionario = $this->cuestionarioRepository->obtenerPorId($cuestionarioId);
+        if (!$cuestionario) {
+            return [
+                'success' => false,
+                'message' => 'Cuestionario no encontrado.'
+            ];
+        }
+
+        if (!is_array($respuestas)) {
+            return [
+                'success' => false,
+                'message' => 'Las respuestas deben enviarse como un arreglo válido.'
+            ];
+        }
+
         $aciertos = 0;
+        $detalles = [];
 
         foreach ($respuestas as $respuesta) {
-
-            $opcionCorrecta =
-                $this->opcionRepository
-                    ->obtenerOpcionCorrecta(
-                        $respuesta['preguntaId']
-                    );
-
             if (
-                $opcionCorrecta ===
-                (int) $respuesta['opcionId']
+                !isset($respuesta['preguntaId']) ||
+                !isset($respuesta['opcionId'])
             ) {
+                return [
+                    'success' => false,
+                    'message' => 'Cada respuesta debe incluir preguntaId y opcionId.'
+                ];
+            }
+
+            $preguntaId = (int) $respuesta['preguntaId'];
+            $opcionId = (int) $respuesta['opcionId'];
+
+            $pregunta = $this->preguntaRepository->obtenerPorId($preguntaId);
+            if (!$pregunta || (int) $pregunta['cuestionario_id'] !== $cuestionarioId) {
+                return [
+                    'success' => false,
+                    'message' => "Pregunta inválida para el cuestionario: {$preguntaId}."
+                ];
+            }
+
+            $opcion = $this->opcionRepository->obtenerPorId($opcionId);
+            if (!$opcion || (int) $opcion['pregunta_id'] !== $preguntaId) {
+                return [
+                    'success' => false,
+                    'message' => "Opción inválida para la pregunta: {$opcionId}."
+                ];
+            }
+
+            $esCorrecta = (bool) $opcion['es_correcta'];
+            if ($esCorrecta) {
                 $aciertos++;
             }
+
+            $detalles[] = [
+                'preguntaId' => $preguntaId,
+                'opcionId' => $opcionId,
+                'correcta' => $esCorrecta,
+                'mensaje' => $esCorrecta
+                    ? 'Respuesta correcta.'
+                    : 'Respuesta incorrecta.'
+            ];
         }
 
         $resultado = new ResultadoCuestionario([
@@ -103,7 +155,8 @@ class CuestionarioService
         $this->resultadoRepository->guardar($resultado);
 
         return [
-            'puntaje' => $aciertos
+            'puntaje' => $aciertos,
+            'respuestas' => $detalles
         ];
     }
 
