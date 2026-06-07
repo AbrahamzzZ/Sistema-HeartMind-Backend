@@ -18,6 +18,10 @@ switch ($ruta) {
         require_once __DIR__ . '/../routes/cuestionarios.php';
         break;
 
+    case 'contenidos':
+        require_once __DIR__ . '/../routes/contenidos.php';
+        break;
+
     default:
         http_response_code(404);
 
