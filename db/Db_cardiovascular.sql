@@ -56,15 +56,26 @@ CREATE TABLE evaluaciones_riesgo (
 -- CONTENIDOS EDUCATIVOS
 -- =====================================
 
-CREATE TABLE contenidos_educativos (
+CREATE TABLE contenidos (
     id INT AUTO_INCREMENT PRIMARY KEY,
+
     titulo VARCHAR(255) NOT NULL,
+
     descripcion TEXT,
+
     contenido LONGTEXT,
+
     tipo ENUM(
         'articulo',
         'video',
         'infografia'
+    ) NOT NULL,
+
+    categoria ENUM(
+        'alimentacion',
+        'ejercicio',
+        'habito_saludable',
+        'advertencia'
     ) NOT NULL,
 
     url VARCHAR(500),
@@ -130,26 +141,4 @@ CREATE TABLE resultados_cuestionario (
     FOREIGN KEY (cuestionario_id)
     REFERENCES cuestionarios(id)
     ON DELETE CASCADE
-);
-
--- =====================================
--- RECURSOS PREVENTIVOS
--- =====================================
-
-CREATE TABLE recursos_preventivos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    titulo VARCHAR(255) NOT NULL,
-    descripcion TEXT,
-    tipo ENUM(
-        'alimentacion',
-        'ejercicio',
-        'habito_saludable',
-        'advertencia'
-    ) NOT NULL,
-
-    contenido TEXT,
-
-    url VARCHAR(500),
-
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
