@@ -44,9 +44,7 @@ class CuestionarioRepository
             'id' => $id
         ]);
 
-        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $resultado ?: null;
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
     public function crear(
@@ -105,9 +103,26 @@ class CuestionarioRepository
         ";
 
         $stmt = $this->db->prepare($sql);
-
-        return $stmt->execute([
+        $stmt->execute([
             'id' => $id
         ]);
+
+        return $stmt->rowCount() > 0;
+    }
+
+    public function existePorTitulo(string $titulo, ?int $excluirId = null): bool
+    {
+        $sql = "SELECT COUNT(*) FROM cuestionarios WHERE titulo = :titulo";
+        $params = ['titulo' => $titulo];
+        
+        if ($excluirId) {
+            $sql .= " AND id != :id";
+            $params['id'] = $excluirId;
+        }
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        
+        return $stmt->fetchColumn() > 0;
     }
 }
