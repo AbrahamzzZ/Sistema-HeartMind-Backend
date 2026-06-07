@@ -17,7 +17,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $accion = $_GET['accion'] ?? null;
 
 try {
-    AuthMiddleware::validarToken();
+    $usuario = AuthMiddleware::validarToken();
 } catch (Exception $e){
     http_response_code(401);
     echo json_encode([
@@ -33,10 +33,7 @@ switch ($method) {
 
         if (isset($_GET['id'])) {
 
-            $controller->obtenerContenido(
-                (int) $_GET['id']
-            );
-
+            $controller->obtenerContenido((int) $_GET['id']);
         } else {
 
             $controller->obtenerContenidos();
@@ -45,20 +42,44 @@ switch ($method) {
         break;
 
     case 'POST':
-        $controller->crearContenido();
-
+        try {
+            AuthMiddleware::validarRol('Administrador');
+            $controller->crearContenido();
+        } catch (Exception $e) {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
         break;
 
     case 'PUT':
-        $controller->actualizarContenido();
-
+        try {
+            AuthMiddleware::validarRol('Administrador');
+            $controller->actualizarContenido();
+        } catch (Exception $e) {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
         break;
 
     case 'DELETE':
-        $controller->eliminarContenido(
-            (int) $_GET['id']
-        );
-
+        try {
+            AuthMiddleware::validarRol('Administrador');
+            $controller->eliminarContenido(
+                (int) $_GET['id']
+            );
+        } catch (Exception $e) {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
         break;
 
     default:

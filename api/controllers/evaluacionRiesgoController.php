@@ -15,7 +15,7 @@ class EvaluacionRiesgoController
         $this->service = $service;
     }
 
-    public function evaluar(): void
+    public function evaluar(int $usuarioId): void
     {
         header(self::CONTENT_TYPE_JSON);
 
@@ -32,6 +32,7 @@ class EvaluacionRiesgoController
             return;
         }
 
+        $datos['usuarioId'] = $usuarioId;
         $resultado = $this->service->evaluar($datos);
 
         echo json_encode([

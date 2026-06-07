@@ -19,7 +19,7 @@ $controller = new EvaluacionRiesgoController($service);
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
-    AuthMiddleware::validarToken();
+    $usuario = AuthMiddleware::validarToken();
 } catch (Exception $e) {
     http_response_code(401);
     echo json_encode([
@@ -32,28 +32,17 @@ try {
 switch ($method) {
 
     case 'GET':
+        $usuarioId = (int) $usuario->usuarioId;
 
-        if (isset($_GET['usuarioId'])) {
-
-            $controller->obtenerHistorial(
-                (int) $_GET['usuarioId']
-            );
-
-        } else {
-
-            http_response_code(400);
-
-            echo json_encode([
-                'message' => 'Debe enviar usuarioId.'
-            ]);
+        if (isset($_GET['usuarioId']) && $usuario->rol === 'Administrador') {
+            $usuarioId = (int) $_GET['usuarioId'];
         }
 
+        $controller->obtenerHistorial($usuarioId);
         break;
 
     case 'POST':
-
-        $controller->evaluar();
-
+        $controller->evaluar((int) $usuario->usuarioId);
         break;
 
     default:

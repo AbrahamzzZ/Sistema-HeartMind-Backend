@@ -29,7 +29,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $accion = $_GET['accion'] ?? null;
 
 try {
-    AuthMiddleware::validarToken();
+    $usuario = AuthMiddleware::validarToken();
 } catch (Exception $e) {
     http_response_code(401);
     echo json_encode([
@@ -44,14 +44,15 @@ switch ($method) {
     case 'GET':
 
         if (isset($_GET['id'])) {
-            $controller->obtenerCuestionario(
-                (int) $_GET['id']
-            );
+            $controller->obtenerCuestionario((int) $_GET['id']);
 
-        } elseif (isset($_GET['usuarioId'])) {
-            $controller->obtenerHistorial(
-                (int) $_GET['usuarioId']
-            );
+        } elseif (($accion ?? null) === 'historial' || isset($_GET['usuarioId'])) {
+            $usuarioId = $usuario->usuarioId;
+            if (isset($_GET['usuarioId']) && $usuario->rol === 'Administrador') {
+                $usuarioId = (int) $_GET['usuarioId'];
+            }
+
+            $controller->obtenerHistorial((int) $usuarioId);
 
         } else {
 
@@ -65,18 +66,21 @@ switch ($method) {
         switch ($accion) {
 
             case 'resolver':
-                $controller->resolverCuestionario();
+                $controller->resolverCuestionario((int) $usuario->usuarioId);
                 break;
 
             case 'crear-cuestionario':
+                AuthMiddleware::validarRol('Administrador');
                 $controller->crearCuestionario();
                 break;
 
             case 'crear-pregunta':
+                AuthMiddleware::validarRol('Administrador');
                 $controller->crearPregunta();
                 break;
 
             case 'crear-opcion':
+                AuthMiddleware::validarRol('Administrador');
                 $controller->crearOpcion();
                 break;
 
@@ -96,14 +100,17 @@ switch ($method) {
         switch ($accion) {
 
             case 'actualizar-cuestionario':
+                AuthMiddleware::validarRol('Administrador');
                 $controller->actualizarCuestionario();
                 break;
 
             case 'actualizar-pregunta':
+                AuthMiddleware::validarRol('Administrador');
                 $controller->actualizarPregunta();
                 break;
 
             case 'actualizar-opcion':
+                AuthMiddleware::validarRol('Administrador');
                 $controller->actualizarOpcion();
                 break;
 
@@ -123,27 +130,18 @@ switch ($method) {
         switch ($accion) {
 
             case 'eliminar-cuestionario':
-
-                $controller->eliminarCuestionario(
-                    (int) $_GET['id']
-                );
-
+                AuthMiddleware::validarRol('Administrador');
+                $controller->eliminarCuestionario((int) $_GET['id']);
                 break;
 
             case 'eliminar-pregunta':
-
-                $controller->eliminarPregunta(
-                    (int) $_GET['id']
-                );
-
+                AuthMiddleware::validarRol('Administrador');
+                $controller->eliminarPregunta((int) $_GET['id']);
                 break;
 
             case 'eliminar-opcion':
-
-                $controller->eliminarOpcion(
-                    (int) $_GET['id']
-                );
-
+                AuthMiddleware::validarRol('Administrador');
+                $controller->eliminarOpcion((int) $_GET['id']);
                 break;
 
             default:
