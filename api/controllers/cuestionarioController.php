@@ -63,7 +63,7 @@ class CuestionarioController
         ]);
     }
 
-    public function resolverCuestionario(): void
+    public function resolverCuestionario(int $usuarioId): void
     {
         header(self::CONTENT_TYPE_JSON);
 
@@ -72,7 +72,7 @@ class CuestionarioController
             true
         );
 
-        if (!$datos || !isset($datos['usuarioId'], $datos['cuestionarioId'], $datos['respuestas'])) {
+        if (!$datos || !isset($datos['cuestionarioId'], $datos['respuestas'])) {
             http_response_code(400);
 
             echo json_encode([
@@ -84,7 +84,7 @@ class CuestionarioController
         }
 
         $resultado = $this->service->resolverCuestionario(
-            $datos['usuarioId'],
+            $usuarioId,
             $datos['cuestionarioId'],
             $datos['respuestas']
         );

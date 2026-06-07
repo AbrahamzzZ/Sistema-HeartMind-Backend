@@ -30,4 +30,25 @@ class AuthMiddleware
             throw new Exception('Token inválido.');
         }
     }
+
+    public static function validarRol(
+        array|string $rolesRequeridos
+    ): object {
+
+        $usuario = self::validarToken();
+        $roles = is_array($rolesRequeridos)
+            ? $rolesRequeridos
+            : [$rolesRequeridos];
+
+        if (
+            !isset($usuario->rol) ||
+            !in_array($usuario->rol, $roles, true)
+        ) {
+            if ($usuario->rol !== 'Administrador') {
+                throw new Exception('No autorizado.');
+            }
+        }
+
+        return $usuario;
+    }
 }

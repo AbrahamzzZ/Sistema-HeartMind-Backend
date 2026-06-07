@@ -18,10 +18,22 @@ $accion = $_GET['accion'] ?? null;
 switch ($method) {
 
     case 'GET':
-        if (isset($_GET['id'])) {
-            $controller->obtenerUsuario((int) $_GET['id']);
-        }elseif ($accion === 'perfil') {
-            $controller->obtenerPerfil();
+        if ($accion === 'perfil') {
+
+            try {
+
+                AuthMiddleware::validarToken();
+                $controller->obtenerPerfil();
+
+            } catch (Exception $e) {
+
+                http_response_code(401);
+
+                echo json_encode([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ]);
+            }
         }
         break;
 
