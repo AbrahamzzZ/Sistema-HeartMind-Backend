@@ -24,10 +24,16 @@ class CuestionarioController
 
         $cuestionarios = $this->service->obtenerCuestionarios();
 
-        echo json_encode([
+        $response = [
             'success' => true,
             'data' => $cuestionarios
-        ]);
+        ];
+
+        if (empty($cuestionarios)) {
+            $response['message'] = 'No hay información que mostrar.';
+        }
+
+        echo json_encode($response);
     }
 
     public function obtenerCuestionario(
@@ -66,8 +72,7 @@ class CuestionarioController
             true
         );
 
-        if (!$datos) {
-
+        if (!$datos || !isset($datos['usuarioId'], $datos['cuestionarioId'], $datos['respuestas'])) {
             http_response_code(400);
 
             echo json_encode([
@@ -84,6 +89,15 @@ class CuestionarioController
             $datos['respuestas']
         );
 
+        if (isset($resultado['success']) && $resultado['success'] === false) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => $resultado['message'] ?? 'Error al resolver el cuestionario.'
+            ]);
+            return;
+        }
+
         echo json_encode([
             'success' => true,
             'data' => $resultado
@@ -98,10 +112,16 @@ class CuestionarioController
 
         $historial = $this->service->obtenerHistorial($usuarioId);
 
-        echo json_encode([
+        $response = [
             'success' => true,
             'data' => $historial
-        ]);
+        ];
+
+        if (empty($historial)) {
+            $response['message'] = 'No hay información que mostrar.';
+        }
+
+        echo json_encode($response);
     }
 
     // CUESTIONARIOS
