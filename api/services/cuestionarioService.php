@@ -223,7 +223,6 @@ class CuestionarioService
             return $validacion;
         }
 
-        // verificar que el cuestionario exista
         $cuestionario = $this->cuestionarioRepository->obtenerPorId($pregunta->cuestionarioId);
         if (!$cuestionario) {
             return [
@@ -306,7 +305,6 @@ class CuestionarioService
             ];
         }
 
-        // asignar valores limpiados al objeto
         $pregunta->pregunta = $datos['pregunta'];
 
         return [
@@ -324,7 +322,6 @@ class CuestionarioService
             return $validacion;
         }
 
-        // verificar que la pregunta exista
         $preg = $this->preguntaRepository->obtenerPorId($opcion->preguntaId);
         if (!$preg) {
             return [
@@ -333,7 +330,6 @@ class CuestionarioService
             ];
         }
 
-        // verificar duplicado de texto para la misma pregunta
         if ($this->opcionRepository->existePorTexto($opcion->textoOpcion, $opcion->preguntaId)) {
             return [
                 'success' => false,
@@ -342,7 +338,6 @@ class CuestionarioService
             ];
         }
 
-        // verificar límite máximo de opciones por pregunta (max 6)
         $opcionesExistentes = $this->opcionRepository->obtenerPorPregunta($opcion->preguntaId);
         if (count($opcionesExistentes) >= 6) {
             return [
@@ -351,11 +346,9 @@ class CuestionarioService
             ];
         }
 
-        // convertir esCorrecta a int explícito
         $opcion->esCorrecta = $opcion->esCorrecta ? 1 : 0;
 
         try {
-            // si la nueva opción es correcta, desmarcar otras en la misma pregunta
             if ($opcion->esCorrecta) {
                 $this->opcionRepository->beginTransaction();
                 $this->opcionRepository->unsetCorrectasByPregunta($opcion->preguntaId);
@@ -373,7 +366,6 @@ class CuestionarioService
                 $resultado = $this->opcionRepository->crear($opcion);
             }
         } catch (PDOException $e) {
-            // intentar rollback si hay transacción activa
             try { $this->opcionRepository->rollBack(); } catch (Exception $ex) {}
             return [
                 'success' => false,
@@ -403,7 +395,6 @@ class CuestionarioService
             return $validacion;
         }
 
-        // verificar que la pregunta exista
         $preg = $this->preguntaRepository->obtenerPorId($opcion->preguntaId);
         if (!$preg) {
             return [
@@ -412,7 +403,6 @@ class CuestionarioService
             ];
         }
 
-        // verificar duplicado de texto para la misma pregunta (excluir la propia opción)
         if ($this->opcionRepository->existePorTexto($opcion->textoOpcion, $opcion->preguntaId, $opcion->id)) {
             return [
                 'success' => false,
@@ -421,7 +411,6 @@ class CuestionarioService
             ];
         }
 
-        // convertir esCorrecta a int explícito
         $opcion->esCorrecta = $opcion->esCorrecta ? 1 : 0;
 
         try {
@@ -458,7 +447,6 @@ class CuestionarioService
     public function eliminarOpcion(
         int $id
     ): array {
-        // obtener opción para conocer la pregunta asociada
         $op = $this->opcionRepository->obtenerPorId($id);
         if (!$op) {
             return [
@@ -506,7 +494,6 @@ class CuestionarioService
             ];
         }
 
-        // asignar texto limpiado
         $opcion->textoOpcion = $datos['texto'];
 
         return [
