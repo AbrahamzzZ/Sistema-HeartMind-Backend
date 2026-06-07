@@ -1,32 +1,28 @@
 <?php
 
-require_once __DIR__ . '/../services/evaluacionRiesgoService.php';
-require_once __DIR__ . '/../models/evaluacionRiesgo.php';
-require_once __DIR__ . '/../repositories/evaluacionRiesgoRepository.php';
+require_once __DIR__ . '/../services/EvaluacionRiesgoService.php';
 
 class EvaluacionRiesgoController
 {
+    private const CONTENT_TYPE_JSON = 'Content-Type: application/json';
+    private const FILE_GET_CONTENTS = 'php://input';
+
     private EvaluacionRiesgoService $service;
-    private EvaluacionRiesgoRepository $repository;
 
     public function __construct(
-        EvaluacionRiesgoService $service,
-        EvaluacionRiesgoRepository $repository
+        EvaluacionRiesgoService $service
     ) {
         $this->service = $service;
-        $this->repository = $repository;
     }
 
     public function evaluar(): void
     {
-        header('Content-Type: application/json');
+        header(self::CONTENT_TYPE_JSON);
 
-        $datos = json_decode(
-            file_get_contents('php://input'),
-            true
-        );
+        $datos = json_decode(file_get_contents(self::FILE_GET_CONTENTS), true);
 
         if (!$datos) {
+
             http_response_code(400);
 
             echo json_encode([
@@ -38,27 +34,6 @@ class EvaluacionRiesgoController
 
         $resultado = $this->service->evaluar($datos);
 
-        $evaluacion = new EvaluacionRiesgo([
-            'usuarioId' => $datos['usuarioId'],
-            'edad' => $datos['edad'],
-            'peso' => $datos['peso'],
-            'altura' => $datos['altura'],
-            'imc' => $resultado['imc'],
-            'presionSistolica' => $datos['presionSistolica'],
-            'presionDiastolica' => $datos['presionDiastolica'],
-            'nivelColesterol' => $datos['nivelColesterol'],
-            'fumador' => $datos['fumador'],
-            'diabetico' => $datos['diabetico'],
-            'actividadFisica' => $datos['actividadFisica'],
-            'antecedentesFamiliares' => $datos['antecedentesFamiliares'],
-            'puntaje' => $resultado['puntaje'],
-            'resultadoRiesgo' => $resultado['resultadoRiesgo']
-        ]);
-
-        $this->repository->guardar(
-            $evaluacion
-        );
-
         echo json_encode([
             'success' => true,
             'data' => $resultado
@@ -68,10 +43,10 @@ class EvaluacionRiesgoController
     public function obtenerHistorial(
         int $usuarioId
     ): void {
-        header('Content-Type: application/json');
 
-        $evaluaciones = $this->repository
-            ->obtenerPorUsuario($usuarioId);
+        header(self::CONTENT_TYPE_JSON);
+
+        $evaluaciones = $this->service->obtenerHistorial($usuarioId);
 
         echo json_encode([
             'success' => true,

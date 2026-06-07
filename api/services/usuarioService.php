@@ -24,10 +24,7 @@ class UsuarioService
             );
         }
 
-        $usuarioExistente = $this->repository
-            ->obtenerPorCorreo(
-                $datos['correo']
-            );
+        $usuarioExistente = $this->repository->obtenerPorCorreo($datos['correo']);
 
         if ($usuarioExistente) {
             throw new Exception(
@@ -48,12 +45,66 @@ class UsuarioService
             genero: $datos['genero'] ?? null
         );
 
-        $this->repository->crear(
-            $usuario
-        );
+        $this->repository->crear($usuario);
 
         return [
             'mensaje' => 'Usuario registrado correctamente.'
         ];
+    }
+
+    public function login(
+        string $correo,
+        string $contrasena
+    ): array {
+
+        $usuario = $this->repository->obtenerPorCorreo($correo);
+
+        if (!$usuario) {
+            throw new Exception(
+                'Credenciales inválidas.'
+            );
+        }
+
+        if (
+            !password_verify(
+                $contrasena,
+                $usuario['contrasena']
+            )
+        ) {
+            throw new Exception(
+                'Credenciales inválidas.'
+            );
+        }
+
+        $token = JwtHelper::generarToken(
+            $usuario['id'],
+            $usuario['correo'],
+            $usuario['rol']
+        );
+
+        return [
+            'token' => $token,
+            'usuario' => [
+                'id' => $usuario['id'],
+                'nombre' => $usuario['nombre'],
+                'correo' => $usuario['correo'],
+                'rol' => $usuario['rol']
+            ]
+        ];
+    }
+
+    public function obtenerPerfil(
+        int $usuarioId
+    ): array {
+
+        $usuario = $this->repository->obtenerPorId($usuarioId);
+
+        if (!$usuario) {
+            throw new Exception(
+                'Usuario no encontrado.'
+            );
+        }
+
+        return $usuario;
     }
 }

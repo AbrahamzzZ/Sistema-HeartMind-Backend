@@ -60,4 +60,30 @@ class UsuarioRepository
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    public function obtenerPorId(
+        int $id
+    ): ?array
+    {
+        $sql = "
+            SELECT
+                id,
+                nombre,
+                correo,
+                rol,
+                edad,
+                genero
+            FROM usuarios
+            WHERE id = :id
+        ";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            'id' => $id
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC)
+            ?: null;
+    }
 }
