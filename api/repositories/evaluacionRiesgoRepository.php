@@ -85,4 +85,18 @@ class EvaluacionRiesgoRepository
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function obtenerTodos(){
+        $sql = "
+            SELECT *
+            FROM evaluaciones_riesgo
+            ORDER BY fecha_evaluacion DESC
+        ";
+
+        $stmt = $this->db->query($sql);
+
+        return $stmt->fetchAll(
+            PDO::FETCH_ASSOC
+        );
+    }
 }

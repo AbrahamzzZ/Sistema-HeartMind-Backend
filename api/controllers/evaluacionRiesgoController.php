@@ -60,4 +60,21 @@ class EvaluacionRiesgoController
 
         echo json_encode($response);
     }
+
+    public function obtenerHistoriales(){
+        header(self::CONTENT_TYPE_JSON);
+
+        $evaluaciones = $this->service->ObtenerHistoriales();
+
+        $response = [
+            'success' => true,
+            'data' => $evaluaciones
+        ];
+
+        if (empty($evaluaciones)) {
+            $response['message'] = 'No hay información que mostrar.';
+        }
+
+        echo json_encode($response);
+    }
 }

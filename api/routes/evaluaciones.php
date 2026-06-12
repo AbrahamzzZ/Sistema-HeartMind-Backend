@@ -32,9 +32,15 @@ try {
 switch ($method) {
 
     case 'GET':
+
+        if (isset($_GET['todos']) && $_GET['todos'] === 'true' && $usuario->rol === 'Administrador') {
+            $controller->obtenerHistoriales();
+            break;
+        }
+
         $usuarioId = (int) $usuario->usuarioId;
 
-        if (isset($_GET['usuarioId']) && $usuario->rol === 'Administrador') {
+        if (isset($_GET['usuarioId']) &&  $usuario->rol === 'Administrador') {
             $usuarioId = (int) $_GET['usuarioId'];
         }
 

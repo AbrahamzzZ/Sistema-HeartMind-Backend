@@ -55,6 +55,10 @@ class EvaluacionRiesgoService
         return $this->repository->obtenerPorUsuario($usuarioId);
     }
 
+    public function obtenerHistoriales(): array{
+        return $this->repository->obtenerTodos();
+    }
+
     private function calcularImc(
         float $peso,
         float $altura
