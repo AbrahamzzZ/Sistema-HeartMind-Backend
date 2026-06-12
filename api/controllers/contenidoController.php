@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../services/contenidoService.php';
+require_once __DIR__ . '/../services/cloudinaryService.php';
 require_once __DIR__ . '/../models/contenido.php';
 
 class ContenidoController{
@@ -42,22 +43,44 @@ class ContenidoController{
     {
         header(self::CONTENT_TYPE_JSON);
 
-        $datos = json_decode(
-            file_get_contents(self::FILE_GET_CONTENTS),
-            true
-        );
+        try {
+            $datos = $_POST;
 
-        $contenido = new Contenido($datos);
+            if (!$datos) {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Datos inválidos.'
+                ]);
+                return;
+            }
 
-        $resultado = $this->service->crearContenido(
-            $contenido
-        );
+            $contenido = new Contenido($datos);
 
-        if (!$resultado['success']) {
-            http_response_code(400);
+            if (!empty($_FILES['archivo'])) {
+
+                $cloudinary = new CloudinaryService();
+
+                $url = $cloudinary->subirVideo(
+                    $_FILES['archivo']['tmp_name']
+                );
+
+                $contenido->url = $url;
+            }
+
+            $resultado = $this->service->crearContenido($contenido);
+
+            echo json_encode($resultado);
+
+        } catch (Exception $e) {
+
+            http_response_code(500);
+
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
         }
-
-        echo json_encode($resultado);
     }
 
     public function actualizarContenido(): void
@@ -97,5 +120,33 @@ class ContenidoController{
         }
 
         echo json_encode($resultado);
+    }
+
+    public function subirVideo(): void
+    {
+        header('Content-Type: application/json');
+
+        try {
+
+            $cloudinary = new CloudinaryService();
+
+            $url = $cloudinary->subirVideo(
+                $_FILES['archivo']['tmp_name']
+            );
+
+            echo json_encode([
+                'success' => true,
+                'url' => $url
+            ]);
+
+        } catch (Exception $e) {
+
+            http_response_code(500);
+
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 }
