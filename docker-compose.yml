@@ -23,6 +23,7 @@ services:
       - "8082:80"
     volumes:
       - ./api:/var/www/html
+      - ./api/php.ini:/usr/local/etc/php/conf.d/uploads.ini
 
     environment:
       DB_HOST: mysql
@@ -30,6 +31,9 @@ services:
       DB_USER: root
       DB_PASSWORD: root123
       JWT_SECRET: HeartMindSecretKey2026SuperSecureJWT123456789
+      CLOUD_NAME: _TU_CLOUD_NAME
+      API_KEY: TU_API_KEY
+      API_SECRET: TU_API_SECRET
       
     depends_on:
       - mysql
