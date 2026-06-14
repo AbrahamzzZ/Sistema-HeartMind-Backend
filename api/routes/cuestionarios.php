@@ -74,6 +74,11 @@ switch ($method) {
                 $controller->crearCuestionario();
                 break;
 
+            case 'crear-completo':
+                AuthMiddleware::validarRol('Administrador');
+                $controller->crearCuestionarioCompleto();
+                break;
+
             case 'crear-pregunta':
                 AuthMiddleware::validarRol('Administrador');
                 $controller->crearPregunta();

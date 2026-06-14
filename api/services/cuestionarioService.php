@@ -177,6 +177,16 @@ class CuestionarioService
         ];
     }
 
+    public function crearCuestionarioCompleto(array $data): array
+    {
+        $ok = $this->cuestionarioRepository->crearCompleto($data);
+
+        return [
+            'success' => $ok,
+            'message' => $ok ? 'Cuestionario creado correctamente' : 'Error al crear cuestionario completo'
+        ];
+    }
+
     public function actualizarCuestionario(Cuestionario $cuestionario): array
     {
         if (!$cuestionario->id || $cuestionario->id <= 0) {

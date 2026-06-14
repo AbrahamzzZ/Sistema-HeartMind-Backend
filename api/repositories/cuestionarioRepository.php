@@ -72,6 +72,68 @@ class CuestionarioRepository
         ]);
     }
 
+    public function crearCompleto(array $data): bool
+    {
+        try {
+            $this->db->beginTransaction();
+
+            // 1. Cuestionario
+            $stmt = $this->db->prepare("
+                INSERT INTO cuestionarios (titulo, descripcion)
+                VALUES (:titulo, :descripcion)
+            ");
+
+            $stmt->execute([
+                'titulo' => $data['titulo'],
+                'descripcion' => $data['descripcion']
+            ]);
+
+            $cuestionarioId = $this->db->lastInsertId();
+
+            // 2. Preguntas
+            foreach ($data['preguntas'] as $pregunta) {
+
+                $stmt = $this->db->prepare("
+                    INSERT INTO preguntas_cuestionario (cuestionario_id, pregunta)
+                    VALUES (:cuestionario_id, :pregunta)
+                ");
+
+                $stmt->execute([
+                    'cuestionario_id' => $cuestionarioId,
+                    'pregunta' => $pregunta['pregunta']
+                ]);
+
+                $preguntaId = $this->db->lastInsertId();
+
+                // 3. Opciones
+                foreach ($pregunta['opciones'] as $opcion) {
+
+                    $stmt = $this->db->prepare("
+                        INSERT INTO opciones_respuesta
+                        (pregunta_id, texto_opcion, es_correcta)
+                        VALUES (:pregunta_id, :texto_opcion, :es_correcta)
+                    ");
+
+                    $stmt->execute([
+                        'pregunta_id' => $preguntaId,
+                        'texto_opcion' => $opcion['texto'],
+                        'es_correcta' => (int)$opcion['esCorrecta']
+                    ]);
+                }
+            }
+
+            $this->db->commit();
+
+            return true;
+
+        } catch (Exception $e) {
+
+            $this->db->rollBack();
+
+            return false;
+        }
+    }
+
     public function actualizar(
         Cuestionario $cuestionario
     ): bool {
