@@ -167,6 +167,30 @@ class CuestionarioController
         }
     }
 
+    public function crearCuestionarioCompleto(): void
+    {
+        header(self::CONTENT_TYPE_JSON);
+
+        $datos = json_decode(file_get_contents(self::FILE_GET_CONTENTS), true);
+
+        if (!$datos) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Datos inválidos.'
+            ]);
+            return;
+        }
+
+        $resultado = $this->service->crearCuestionarioCompleto($datos);
+
+        if (!$resultado['success']) {
+            http_response_code(400);
+        }
+
+        echo json_encode($resultado);
+    }
+
     public function actualizarCuestionario(): void
     {
         header(self::CONTENT_TYPE_JSON);
