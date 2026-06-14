@@ -8,8 +8,6 @@ class ContenidoValidator extends Validator
     private const TITULO_MAX = 255;
     private const DESCRIPCION_MIN = 2;
     private const DESCRIPCION_MAX = 255;
-    private const CONTENIDO_MIN = 2;
-    private const CONTENIDO_MAX = 255;
     private const URL_MAX = 500;
     private const TIPO_MAX = 100;
     private const CATEGORIA_MAX = 100;
@@ -31,13 +29,6 @@ class ContenidoValidator extends Validator
 
         $this->validateMinLength($data['descripcion'], self::DESCRIPCION_MIN, 'descripción');
         $this->validateMaxLength($data['descripcion'], self::DESCRIPCION_MAX, 'descripción');
-
-        if (!$this->validateRequired($data['contenido'] ?? '', 'contenido')) {
-            return false;
-        }
-
-        $this->validateMinLength($data['contenido'], self::CONTENIDO_MIN, 'contenido');
-        $this->validateMaxLength($data['contenido'], self::CONTENIDO_MAX, 'contenido');
 
         if (!$this->validateRequired($data['tipo'] ?? '', 'tipo')) {
             return false;
