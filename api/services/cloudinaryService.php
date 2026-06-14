@@ -50,7 +50,7 @@ class CloudinaryService
             ->upload(
                 $rutaArchivo,
                 [
-                    'resource_type' => 'raw',
+                    'resource_type' => 'auto',
                     'folder' => 'heartmind',
                     'use_filename' => true,
                     'filename_override' => pathinfo(
