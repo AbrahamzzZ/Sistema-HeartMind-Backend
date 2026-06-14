@@ -54,19 +54,19 @@ class ContenidoRepository
             (
                 titulo,
                 descripcion,
-                contenido,
                 tipo,
                 categoria,
-                url
+                url,
+                public_id
             )
             VALUES
             (
                 :titulo,
                 :descripcion,
-                :contenido,
                 :tipo,
                 :categoria,
-                :url
+                :url,
+                :public_id
             )
         ";
 
@@ -75,10 +75,10 @@ class ContenidoRepository
         return $stmt->execute([
             'titulo' => $contenido->titulo,
             'descripcion' => $contenido->descripcion,
-            'contenido' => $contenido->contenido,
             'tipo' => $contenido->tipo,
             'categoria' => $contenido->categoria,
-            'url' => $contenido->url
+            'url' => $contenido->url,
+            'public_id' => $contenido->publicId
         ]);
     }
 
@@ -91,10 +91,10 @@ class ContenidoRepository
             SET
                 titulo = :titulo,
                 descripcion = :descripcion,
-                contenido = :contenido,
                 tipo = :tipo,
                 categoria = :categoria,
-                url = :url
+                url = :url,
+                public_id = :public_id
             WHERE id = :id
         ";
 
@@ -104,10 +104,10 @@ class ContenidoRepository
             'id' => $contenido->id,
             'titulo' => $contenido->titulo,
             'descripcion' => $contenido->descripcion,
-            'contenido' => $contenido->contenido,
             'tipo' => $contenido->tipo,
             'categoria' => $contenido->categoria,
-            'url' => $contenido->url
+            'url' => $contenido->url,
+            'public_id' => $contenido->publicId
         ]);
     }
 

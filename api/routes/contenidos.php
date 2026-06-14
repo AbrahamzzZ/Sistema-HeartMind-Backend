@@ -43,23 +43,22 @@ switch ($method) {
 
     case 'POST':
         try {
-            AuthMiddleware::validarRol('Administrador');
-            $controller->crearContenido();
-        } catch (Exception $e) {
-            http_response_code(403);
-            echo json_encode([
-                'success' => false,
-                'message' => $e->getMessage()
-            ]);
-        }
-        break;
 
-    case 'PUT':
-        try {
             AuthMiddleware::validarRol('Administrador');
-            $controller->actualizarContenido();
+
+            if ($accion === 'editar') {
+
+                $controller->actualizarContenido();
+
+            } else {
+
+                $controller->crearContenido();
+            }
+
         } catch (Exception $e) {
+
             http_response_code(403);
+
             echo json_encode([
                 'success' => false,
                 'message' => $e->getMessage()

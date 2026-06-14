@@ -7,8 +7,8 @@ class Contenido
     public ?string $descripcion = null;
     public string $tipo;
     public string $categoria;
-    public ?string $contenido = null;
     public ?string $url = null;
+    public ?string $publicId = null;
     public function __construct(
         array $data
     ) {

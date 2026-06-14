@@ -8,11 +8,13 @@ class ContenidoService
 {
     private ContenidoRepository $repository;
     private ContenidoValidator $validator;
+    private CloudinaryService $cloudinary;
 
     public function __construct(
         ContenidoRepository $repository
     ) {
         $this->repository = $repository;
+        $this->cloudinary = new CloudinaryService();
         $this->validator = new ContenidoValidator();
     }
 
@@ -104,8 +106,10 @@ class ContenidoService
         ];
     }
 
-    public function eliminarContenido(int $id): array
-    {
+    public function eliminarContenido(
+        int $id
+    ): array {
+
         if ($id <= 0) {
             return [
                 'success' => false,
@@ -122,11 +126,24 @@ class ContenidoService
             ];
         }
 
+        if (
+            !empty($contenido['public_id'])
+        ) {
+
+            $this->cloudinary->eliminarArchivo(
+                $contenido['public_id'],
+                $contenido['tipo']
+            );
+        }
+
         $resultado = $this->repository->eliminar($id);
 
         return [
             'success' => $resultado,
-            'message' => $resultado ? 'Contenido eliminado correctamente.' : 'No se pudo eliminar el contenido.'
+            'message' =>
+                $resultado
+                    ? 'Contenido eliminado correctamente.'
+                    : 'No se pudo eliminar el contenido.'
         ];
     }
 
@@ -135,10 +152,10 @@ class ContenidoService
         $datos = [
             'titulo' => trim($contenido->titulo ?? ''),
             'descripcion' => trim($contenido->descripcion ?? ''),
-            'contenido' => trim($contenido->contenido ?? ''),
             'tipo' => trim($contenido->tipo ?? ''),
             'categoria' => trim($contenido->categoria ?? ''),
-            'url' => trim($contenido->url ?? '')
+            'url' => trim($contenido->url ?? ''),
+            'public_id' => trim($contenido->publicId ?? '')
         ];
 
         if (!$this->validator->validate($datos)) {
@@ -151,10 +168,10 @@ class ContenidoService
 
         $contenido->titulo = $datos['titulo'];
         $contenido->descripcion = $datos['descripcion'];
-        $contenido->contenido = $datos['contenido'];
         $contenido->tipo = $datos['tipo'];
         $contenido->categoria = $datos['categoria'];
         $contenido->url = $datos['url'];
+        $contenido->publicId = $datos['public_id'];
 
         return [
             'success' => true
