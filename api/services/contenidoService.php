@@ -18,14 +18,9 @@ class ContenidoService
         $this->validator = new ContenidoValidator();
     }
 
-    public function obtenerContenidos(): array
-    {
+    public function obtenerContenidos(): array {
         $contenidos = $this->repository->obtenerTodos();
-
-        $response = [
-            'success' => true,
-            'data' => $contenidos
-        ];
+        $response = ['success' => true, 'data' => $contenidos];
 
         if (empty($contenidos)) {
             $response['message'] = 'No hay información que mostrar.';
@@ -37,35 +32,24 @@ class ContenidoService
     public function obtenerContenido(int $id): array
     {
         if ($id <= 0) {
-            return [
-                'success' => false,
-                'message' => 'ID de contenido inválido.'
+            return ['success' => false, 'message' => 'ID de contenido inválido.'
             ];
         }
-
         $contenido = $this->repository->obtenerPorId($id);
 
         if (!$contenido) {
-            return [
-                'success' => false,
-                'message' => 'No se encuentra nada por ese id.'
-            ];
+            return ['success' => false, 'message' => 'No se encuentra nada por ese id.'];
         }
 
-        return [
-            'success' => true,
-            'data' => $contenido
-        ];
+        return ['success' => true,'data' => $contenido];
     }
 
-    public function crearContenido(Contenido $contenido): array
-    {
+    public function crearContenido(Contenido $contenido): array {
         $validacion = $this->validarContenido($contenido);
 
         if (!$validacion['success']) {
             return $validacion;
         }
-
         $resultado = $this->repository->crear($contenido);
 
         return [
@@ -77,19 +61,12 @@ class ContenidoService
     public function actualizarContenido(Contenido $contenido): array
     {
         if (!$contenido->id || $contenido->id <= 0) {
-            return [
-                'success' => false,
-                'message' => 'ID de contenido inválido.'
-            ];
+            return ['success' => false, 'message' => 'ID de contenido inválido.'];
         }
-
         $existe = $this->repository->obtenerPorId($contenido->id);
 
         if (!$existe) {
-            return [
-                'success' => false,
-                'message' => 'No se encuentra nada por ese id.'
-            ];
+            return ['success' => false, 'message' => 'No se encuentra nada por ese id.'];
         }
 
         $validacion = $this->validarContenido($contenido);
@@ -106,30 +83,18 @@ class ContenidoService
         ];
     }
 
-    public function eliminarContenido(
-        int $id
-    ): array {
-
+    public function eliminarContenido(int $id): array {
         if ($id <= 0) {
-            return [
-                'success' => false,
-                'message' => 'ID de contenido inválido.'
-            ];
+            return ['success' => false, 'message' => 'ID de contenido inválido.'];
         }
 
         $contenido = $this->repository->obtenerPorId($id);
 
         if (!$contenido) {
-            return [
-                'success' => false,
-                'message' => 'No se encuentra nada por ese id.'
-            ];
+            return ['success' => false, 'message' => 'No se encuentra nada por ese id.'];
         }
 
-        if (
-            !empty($contenido['public_id'])
-        ) {
-
+        if (!empty($contenido['public_id'])) {
             $this->cloudinary->eliminarArchivo(
                 $contenido['public_id'],
                 $contenido['tipo']
@@ -140,10 +105,7 @@ class ContenidoService
 
         return [
             'success' => $resultado,
-            'message' =>
-                $resultado
-                    ? 'Contenido eliminado correctamente.'
-                    : 'No se pudo eliminar el contenido.'
+            'message' => $resultado ? 'Contenido eliminado correctamente.' : 'No se pudo eliminar el contenido.'
         ];
     }
 
@@ -173,8 +135,6 @@ class ContenidoService
         $contenido->url = $datos['url'];
         $contenido->publicId = $datos['public_id'];
 
-        return [
-            'success' => true
-        ];
+        return ['success' => true];
     }
 }
