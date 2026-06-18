@@ -109,6 +109,11 @@ switch ($method) {
                 $controller->actualizarCuestionario();
                 break;
 
+            case 'actualizar-completo':
+                AuthMiddleware::validarRol('Administrador');
+                $controller->actualizarCuestionarioCompleto();
+                break;
+
             case 'actualizar-pregunta':
                 AuthMiddleware::validarRol('Administrador');
                 $controller->actualizarPregunta();

@@ -221,6 +221,46 @@ class CuestionarioController
         echo json_encode($resultado);
     }
 
+    public function actualizarCuestionarioCompleto(): void
+    {
+        header(self::CONTENT_TYPE_JSON);
+
+        $datos = json_decode(
+            file_get_contents(self::FILE_GET_CONTENTS),
+            true
+        );
+
+        if (!$datos) {
+            http_response_code(400);
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Datos inválidos.'
+            ]);
+
+            return;
+        }
+
+        if (!isset($datos['id'])) {
+            http_response_code(400);
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'El id del cuestionario es obligatorio.'
+            ]);
+
+            return;
+        }
+
+        $resultado = $this->service->actualizarCuestionarioCompleto($datos);
+
+        if (!$resultado['success']) {
+            http_response_code(400);
+        }
+
+        echo json_encode($resultado);
+    }
+
     public function eliminarCuestionario(
         int $id
     ): void {
