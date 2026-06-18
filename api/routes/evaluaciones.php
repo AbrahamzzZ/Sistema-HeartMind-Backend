@@ -22,10 +22,7 @@ try {
     $usuario = AuthMiddleware::validarToken();
 } catch (Exception $e) {
     http_response_code(401);
-    echo json_encode([
-        'success' => false,
-        'message' => $e->getMessage()
-    ]);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     return;
 }
 
@@ -52,10 +49,6 @@ switch ($method) {
         break;
 
     default:
-
         http_response_code(405);
-
-        echo json_encode([
-            'message' => 'Método no permitido.'
-        ]);
+        echo json_encode(['message' => 'Método no permitido.']);
 }

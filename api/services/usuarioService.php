@@ -10,9 +10,7 @@ class UsuarioService
         $this->repository = $repository;
     }
 
-    public function registrar(
-        array $datos
-    ): array {
+    public function registrar(array $datos): array {
 
         if (
             empty($datos['nombre']) ||
@@ -36,10 +34,7 @@ class UsuarioService
             id: null,
             nombre: $datos['nombre'],
             correo: $datos['correo'],
-            contrasena: password_hash(
-                $datos['contrasena'],
-                PASSWORD_BCRYPT
-            ),
+            contrasena: password_hash($datos['contrasena'], PASSWORD_BCRYPT),
             rol: 'Usuario',
             edad: $datos['edad'] ?? null,
             genero: $datos['genero'] ?? null
@@ -47,64 +42,35 @@ class UsuarioService
 
         $this->repository->crear($usuario);
 
-        return [
-            'mensaje' => 'Usuario registrado correctamente.'
-        ];
+        return ['mensaje' => 'Usuario registrado correctamente.'];
     }
 
-    public function login(
-        string $correo,
-        string $contrasena
-    ): array {
+    public function login(string $correo, string $contrasena): array {
 
         $usuario = $this->repository->obtenerPorCorreo($correo);
 
         if (!$usuario) {
-            throw new Exception(
-                'Credenciales inválidas.'
-            );
+            throw new Exception('Credenciales inválidas.');
         }
 
-        if (
-            !password_verify(
-                $contrasena,
-                $usuario['contrasena']
-            )
-        ) {
-            throw new Exception(
-                'Credenciales inválidas.'
-            );
+        if (!password_verify($contrasena, $usuario['contrasena'])) {
+            throw new Exception('Credenciales inválidas.');
         }
 
-        $token = JwtHelper::generarToken(
-            $usuario['id'],
-            $usuario['correo'],
-            $usuario['rol']
-        );
+        $token = JwtHelper::generarToken($usuario['id'], $usuario['correo'], $usuario['rol']);
 
         return [
             'token' => $token,
-            'usuario' => [
-                'id' => $usuario['id'],
-                'nombre' => $usuario['nombre'],
-                'correo' => $usuario['correo'],
-                'rol' => $usuario['rol']
-            ]
+            'usuario' => ['id' => $usuario['id'], 'nombre' => $usuario['nombre'], 'correo' => $usuario['correo'], 'rol' => $usuario['rol']]
         ];
     }
 
-    public function obtenerPerfil(
-        int $usuarioId
-    ): array {
-
+    public function obtenerPerfil(int $usuarioId): array {
         $usuario = $this->repository->obtenerPorId($usuarioId);
 
         if (!$usuario) {
-            throw new Exception(
-                'Usuario no encontrado.'
-            );
+            throw new Exception('Usuario no encontrado.');
         }
-
         return $usuario;
     }
 }

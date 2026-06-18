@@ -38,55 +38,34 @@ switch ($method) {
 
             $controller->obtenerContenidos();
         }
-
         break;
 
     case 'POST':
         try {
-
             AuthMiddleware::validarRol('Administrador');
-
             if ($accion === 'editar') {
-
                 $controller->actualizarContenido();
-
             } else {
-
                 $controller->crearContenido();
             }
-
         } catch (Exception $e) {
-
             http_response_code(403);
-
-            echo json_encode([
-                'success' => false,
-                'message' => $e->getMessage()
-            ]);
+            echo json_encode(['success' => false,'message' => $e->getMessage()]);
         }
         break;
 
     case 'DELETE':
         try {
             AuthMiddleware::validarRol('Administrador');
-            $controller->eliminarContenido(
-                (int) $_GET['id']
-            );
+            $controller->eliminarContenido((int) $_GET['id']);
         } catch (Exception $e) {
             http_response_code(403);
-            echo json_encode([
-                'success' => false,
-                'message' => $e->getMessage()
-            ]);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
         break;
 
     default:
 
         http_response_code(405);
-
-        echo json_encode([
-            'success' => false,
-            'message' => 'Método no permitido.'
-        ]);
+        echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
 }

@@ -48,10 +48,7 @@ class EvaluacionRiesgoService
         ];
     }
 
-    public function obtenerHistorial(
-        int $usuarioId
-    ): array {
-
+    public function obtenerHistorial(int $usuarioId): array {
         return $this->repository->obtenerPorUsuario($usuarioId);
     }
 
@@ -59,19 +56,11 @@ class EvaluacionRiesgoService
         return $this->repository->obtenerTodos();
     }
 
-    private function calcularImc(
-        float $peso,
-        float $altura
-    ): float {
-
+    private function calcularImc(float $peso, float $altura): float {
         return round($peso / ($altura * $altura), 2);
     }
 
-    private function calcularPuntaje(
-        array $datos,
-        float $imc
-    ): int {
-
+    private function calcularPuntaje(array $datos, float $imc): int {
         $puntaje = 0;
 
         // Edad
@@ -123,10 +112,7 @@ class EvaluacionRiesgoService
         return $puntaje;
     }
 
-    private function determinarRiesgo(
-        int $puntaje
-    ): string {
-
+    private function determinarRiesgo(int $puntaje): string {
         if ($puntaje <= 5) {
             return 'Bajo';
         }
@@ -138,9 +124,7 @@ class EvaluacionRiesgoService
         return 'Alto';
     }
 
-    private function generarRecomendaciones(
-        string $riesgo
-    ): array {
+    private function generarRecomendaciones(string $riesgo): array {
 
         return match ($riesgo) {
 

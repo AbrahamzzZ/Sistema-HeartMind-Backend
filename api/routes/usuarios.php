@@ -21,18 +21,11 @@ switch ($method) {
         if ($accion === 'perfil') {
 
             try {
-
                 AuthMiddleware::validarToken();
                 $controller->obtenerPerfil();
-
             } catch (Exception $e) {
-
                 http_response_code(401);
-
-                echo json_encode([
-                    'success' => false,
-                    'message' => $e->getMessage()
-                ]);
+                echo json_encode(['success' => false, 'message' => $e->getMessage()]);
             }
         }
         break;
@@ -49,15 +42,11 @@ switch ($method) {
 
             default:
                 http_response_code(400);
-                echo json_encode([
-                    'message' => 'Acción inválida.'
-                ]);
+                echo json_encode(['message' => 'Acción inválida.']);
         }
         break;
 
     default:
         http_response_code(405);
-        echo json_encode([
-            'message' => 'Método no permitido.'
-        ]);
+        echo json_encode(['message' => 'Método no permitido.']);
 }
