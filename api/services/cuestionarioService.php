@@ -219,6 +219,16 @@ class CuestionarioService
         ];
     }
 
+    public function actualizarCuestionarioCompleto(array $data): array
+    {
+        $ok = $this->cuestionarioRepository->actualizarCompleto($data);
+
+        return [
+            'success' => $ok,
+            'message' => $ok ? 'Cuestionario actualizado correctamente' : 'Error al actualizar cuestionario'
+        ];
+    }
+
     private function validarCuestionario(Cuestionario $cuestionario, ?int $excluirId = null): array
     {
         $datos = [
