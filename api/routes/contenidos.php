@@ -4,10 +4,10 @@ require_once __DIR__ . '/../config/conexion.php';
 require_once __DIR__ . '/../helpers/JwtHelper.php';
 require_once __DIR__ . '/../middleware/authMiddleware.php';
 
-require_once __DIR__ . '/../models/contenido.php';
-require_once __DIR__ . '/../repositories/contenidoRepository.php';
-require_once __DIR__ . '/../services/contenidoService.php';
-require_once __DIR__ . '/../controllers/contenidoController.php';
+require_once __DIR__ . '/../models/contenido/contenido.php';
+require_once __DIR__ . '/../repositories/contenido/contenidoRepository.php';
+require_once __DIR__ . '/../services/contenido/contenidoService.php';
+require_once __DIR__ . '/../controllers/contenido/contenidoController.php';
 
 $db = Conexion::obtenerConexion();
 $repository = new ContenidoRepository($db);

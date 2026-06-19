@@ -14,12 +14,7 @@ class Contenido
     ) {
         foreach ($data as $propiedad => $valor) {
 
-            if (
-                property_exists(
-                    $this,
-                    $propiedad
-                )
-            ) {
+            if (property_exists($this, $propiedad)) {
                 $this->$propiedad = $valor;
             }
         }

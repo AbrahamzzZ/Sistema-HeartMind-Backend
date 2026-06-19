@@ -4,13 +4,13 @@ require_once __DIR__ . '/../config/conexion.php';
 require_once __DIR__ . '/../helpers/JwtHelper.php';
 require_once __DIR__ . '/../middleware/authMiddleware.php';
 
-require_once __DIR__ . '/../models/cuestionario.php';
-require_once __DIR__ . '/../models/resultadoCuestionario.php';
+require_once __DIR__ . '/../models/cuestionario/cuestionario.php';
+require_once __DIR__ . '/../models/cuestionario/resultadoCuestionario.php';
 
-require_once __DIR__ . '/../repositories/cuestionarioRepository.php';
-require_once __DIR__ . '/../repositories/resultadoCuestionarioRepository.php';
-require_once __DIR__ . '/../repositories/preguntaCuestionarioRepository.php';
-require_once __DIR__ . '/../repositories/opcionRespuestaRepository.php';
+require_once __DIR__ . '/../repositories/cuestionario/cuestionarioRepository.php';
+require_once __DIR__ . '/../repositories/cuestionario/resultadoCuestionarioRepository.php';
+require_once __DIR__ . '/../repositories/cuestionario/preguntaCuestionarioRepository.php';
+require_once __DIR__ . '/../repositories/cuestionario/opcionRespuestaRepository.php';
 
 require_once __DIR__ . '/../services/cuestionarioService.php';
 require_once __DIR__ . '/../controllers/cuestionarioController.php';

@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__ . '/../repositories/contenidoRepository.php';
-require_once __DIR__ . '/../models/contenido.php';
-require_once __DIR__ . '/../validator/contenidoValidator.php';
+require_once __DIR__ . '/../../repositories/contenido/contenidoRepository.php';
+require_once __DIR__ . '/../../models/contenido/contenido.php';
+require_once __DIR__ . '/../../validator/contenidoValidator.php';
 
 class ContenidoService
 {

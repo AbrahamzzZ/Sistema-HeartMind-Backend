@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__ . '/../models/EvaluacionRiesgo.php';
-require_once __DIR__ . '/../repositories/EvaluacionRiesgoRepository.php';
+require_once __DIR__ . '/../models/evaluacion/EvaluacionRiesgo.php';
+require_once __DIR__ . '/../repositories/evaluacion/EvaluacionRiesgoRepository.php';
 
 class EvaluacionRiesgoService
 {
@@ -13,10 +13,7 @@ class EvaluacionRiesgoService
         $this->repository = $repository;
     }
 
-    public function evaluar(
-        array $datos
-    ): array {
-
+    public function evaluar(array $datos): array {
         $imc = $this->calcularImc($datos['peso'], $datos['altura']);
         $puntaje = $this->calcularPuntaje($datos, $imc);
         $riesgo = $this->determinarRiesgo($puntaje);
