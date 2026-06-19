@@ -1,12 +1,12 @@
 <?php
 
-require_once __DIR__ . '/../repositories/cuestionarioRepository.php';
-require_once __DIR__ . '/../repositories/resultadoCuestionarioRepository.php';
+require_once __DIR__ . '/../repositories/cuestionario/cuestionarioRepository.php';
+require_once __DIR__ . '/../repositories/cuestionario/resultadoCuestionarioRepository.php';
 
-require_once __DIR__ . '/../models/cuestionario.php';
-require_once __DIR__ . '/../models/opcionRespuesta.php';
-require_once __DIR__ . '/../models/preguntaCuestionario.php';
-require_once __DIR__ . '/../models/resultadoCuestionario.php';
+require_once __DIR__ . '/../models/cuestionario/cuestionario.php';
+require_once __DIR__ . '/../models/cuestionario/opcionRespuesta.php';
+require_once __DIR__ . '/../models/cuestionario/preguntaCuestionario.php';
+require_once __DIR__ . '/../models/cuestionario/resultadoCuestionario.php';
 
 require_once __DIR__ . '/../validator/cuestionarioValidator.php';
 

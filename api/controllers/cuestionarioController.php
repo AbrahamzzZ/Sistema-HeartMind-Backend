@@ -1,10 +1,10 @@
 <?php
 
 require_once __DIR__ . '/../services/cuestionarioService.php';
-require_once __DIR__ . '/../models/cuestionario.php';
-require_once __DIR__ . '/../models/preguntaCuestionario.php';
-require_once __DIR__ . '/../models/opcionRespuesta.php';
-require_once __DIR__ . '/../models/resultadoCuestionario.php';
+require_once __DIR__ . '/../models/cuestionario/cuestionario.php';
+require_once __DIR__ . '/../models/cuestionario/preguntaCuestionario.php';
+require_once __DIR__ . '/../models/cuestionario/opcionRespuesta.php';
+require_once __DIR__ . '/../models/cuestionario/resultadoCuestionario.php';
 
 class CuestionarioController
 {

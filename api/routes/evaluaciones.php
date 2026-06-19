@@ -4,9 +4,9 @@ require_once __DIR__ . '/../config/conexion.php';
 require_once __DIR__ . '/../helpers/JwtHelper.php';
 require_once __DIR__ . '/../middleware/authMiddleware.php';
 
-require_once __DIR__ . '/../models/EvaluacionRiesgo.php';
+require_once __DIR__ . '/../models/evaluacion/EvaluacionRiesgo.php';
 
-require_once __DIR__ . '/../repositories/EvaluacionRiesgoRepository.php';
+require_once __DIR__ . '/../repositories/evaluacion/EvaluacionRiesgoRepository.php';
 
 require_once __DIR__ . '/../services/EvaluacionRiesgoService.php';
 
