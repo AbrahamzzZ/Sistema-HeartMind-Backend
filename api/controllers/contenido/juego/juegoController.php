@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__ . '/../services/contenido/juego/juegoService.php';
-require_once __DIR__ . '/../models/contenido/juego/juego.php';
+require_once __DIR__ . '/../../../services/contenido/juego/juegoService.php';
+require_once __DIR__ . '/../../../models/contenido/juego/juego.php';
 
 class JuegoController
 {

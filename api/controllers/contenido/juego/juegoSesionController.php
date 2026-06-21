@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../services/contenido/juego/juegoSesionService.php';
+require_once __DIR__ . '/../../../services/contenido/juego/juegoSesionService.php';
 
 class JuegoSesionController
 {
@@ -14,9 +14,6 @@ class JuegoSesionController
         $this->service = $service;
     }
 
-    // =========================
-    // INICIAR JUEGO
-    // =========================
     public function iniciarJuego(): void
     {
         header(self::CONTENT_TYPE_JSON);
@@ -40,9 +37,6 @@ class JuegoSesionController
         echo json_encode($resultado);
     }
 
-    // =========================
-    // OBTENER SESIÓN ACTIVA
-    // =========================
     public function obtenerSesionActiva(): void
     {
         header(self::CONTENT_TYPE_JSON);
@@ -66,9 +60,6 @@ class JuegoSesionController
         echo json_encode($resultado);
     }
 
-    // =========================
-    // FINALIZAR JUEGO
-    // =========================
     public function finalizarJuego(): void
     {
         header(self::CONTENT_TYPE_JSON);

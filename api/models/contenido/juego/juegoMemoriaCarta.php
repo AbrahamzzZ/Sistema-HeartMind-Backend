@@ -3,10 +3,10 @@
 class JuegoMemoriaCarta
 {
     public ?int $id = null;
-    public int $juego_id;
+    public int $juegoId;
     public string $contenido;
     public string $tipo = 'texto';
-    public int $par_id;
+    public int $parId;
 
     public function __construct(array $data)
     {

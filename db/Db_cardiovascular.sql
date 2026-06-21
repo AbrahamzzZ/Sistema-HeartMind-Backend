@@ -142,6 +142,7 @@ CREATE TABLE juego_categorias (
     id INT AUTO_INCREMENT PRIMARY KEY,
     juego_id INT NOT NULL,
     nombre VARCHAR(100) NOT NULL,
+    orden INT DEFAULT 0,
     FOREIGN KEY (juego_id) REFERENCES juegos(id) ON DELETE CASCADE
 );
 
@@ -150,6 +151,7 @@ CREATE TABLE juego_items (
     juego_id INT NOT NULL,
     texto VARCHAR(255) NOT NULL,
     categoria_correcta_id INT NOT NULL,
+    orden INT DEFAULT 0,
     FOREIGN KEY (juego_id) REFERENCES juegos(id) ON DELETE CASCADE,
     FOREIGN KEY (categoria_correcta_id) REFERENCES juego_categorias(id)
 );
@@ -166,19 +168,6 @@ CREATE TABLE juego_memoria_cartas (
 
     FOREIGN KEY (juego_id) REFERENCES juegos(id) ON DELETE CASCADE,
     FOREIGN KEY (par_id) REFERENCES juego_memoria_cartas(id)
-);
-
--- =====================================
--- FROGGY CARDIO
--- =====================================
-CREATE TABLE juego_froggy_eventos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    juego_id INT NOT NULL,
-    descripcion VARCHAR(255) NOT NULL,
-    es_correcto BOOLEAN DEFAULT TRUE,
-    puntaje INT DEFAULT 0,
-
-    FOREIGN KEY (juego_id) REFERENCES juegos(id) ON DELETE CASCADE
 );
 
 -- =====================================

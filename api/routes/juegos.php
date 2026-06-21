@@ -4,25 +4,22 @@ require_once __DIR__ . '/../config/conexion.php';
 require_once __DIR__ . '/../helpers/JwtHelper.php';
 require_once __DIR__ . '/../middleware/authMiddleware.php';
 
-require_once __DIR__ . '/../repositories/juegoRepository.php';
-require_once __DIR__ . '/../services/juego/juegoService.php';
-require_once __DIR__ . '/../controllers/juego/juegoController.php';
+require_once __DIR__ . '/../repositories/contenido/juego/juegoRepository.php';
+require_once __DIR__ . '/../services/contenido/juego/juegoService.php';
+require_once __DIR__ . '/../controllers/contenido/juego/juegoController.php';
 
-require_once __DIR__ . '/../repositories/juegoSesionRepository.php';
-require_once __DIR__ . '/../services/juego/juegoSesionService.php';
-require_once __DIR__ . '/../controllers/juego/juegoSesionController.php';
+require_once __DIR__ . '/../repositories/contenido/juego/juegoSesionRepository.php';
+require_once __DIR__ . '/../services/contenido/juego/juegoSesionService.php';
+require_once __DIR__ . '/../controllers/contenido/juego/juegoSesionController.php';
 
-require_once __DIR__ . '/../repositories/clasificaHabitosRepository.php';
-require_once __DIR__ . '/../services/juego/clasificaHabitosService.php';
-require_once __DIR__ . '/../controllers/juego/clasificaHabitosController.php';
+require_once __DIR__ . '/../repositories/contenido/juego/clasificaHabitosRepository.php';
+require_once __DIR__ . '/../services/contenido/juego/clasificaHabitosService.php';
+require_once __DIR__ . '/../controllers/contenido/juego/clasificaHabitosController.php';
 
-require_once __DIR__ . '/../repositories/memoriaCardiacaRepository.php';
-require_once __DIR__ . '/../services/juego/memoriaCardiacaService.php';
-require_once __DIR__ . '/../controllers/juego/memoriaCardiacaController.php';
+require_once __DIR__ . '/../repositories/contenido/juego/memoriaCardiacaRepository.php';
+require_once __DIR__ . '/../services/contenido/juego/memoriaCardiacaService.php';
+require_once __DIR__ . '/../controllers/contenido/juego/memoriaCardiacaController.php';
 
-require_once __DIR__ . '/../repositories/froggyCardioRepository.php';
-require_once __DIR__ . '/../services/juego/froggyCardioService.php';
-require_once __DIR__ . '/../controllers/juego/froggyCardioController.php';
 
 $db = Conexion::obtenerConexion();
 $juegoController = new JuegoController(new JuegoService(new JuegoRepository($db)));
@@ -68,12 +65,6 @@ switch ($method) {
         // memoria
         if (isset($_GET['memoria_id'])) {
             $memoriaController->obtenerCartas((int) $_GET['memoria_id']);
-            break;
-        }
-
-        // froggy
-        if (isset($_GET['froggy_id'])) {
-            $froggyController->obtenerEventos((int) $_GET['froggy_id']);
             break;
         }
 

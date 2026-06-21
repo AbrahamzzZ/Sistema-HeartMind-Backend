@@ -3,8 +3,9 @@
 class JuegoCategoria
 {
     public ?int $id = null;
-    public int $juego_id;
+    public int $juegoId;
     public string $nombre;
+    public int $orden;
 
     public function __construct(array $data)
     {

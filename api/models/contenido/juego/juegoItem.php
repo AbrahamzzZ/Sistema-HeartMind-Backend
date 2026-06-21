@@ -3,9 +3,10 @@
 class JuegoItem
 {
     public ?int $id = null;
-    public int $juego_id;
+    public int $juegoId;
     public string $texto;
-    public int $categoria_correcta_id;
+    public int $categoriaCorrectaId;
+    public int $orden;
 
     public function __construct(array $data)
     {
