@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../repositories/contenido/juego/clasificaHabitosRepository.php';
+require_once __DIR__ . '/../../../repositories/contenido/juego/clasificaHabitosRepository.php';
 
 class ClasificaHabitosService
 {
@@ -11,6 +11,7 @@ class ClasificaHabitosService
         $this->repository = $repository;
     }
 
+
     public function obtenerDatosJuego(int $juegoId): array
     {
         if ($juegoId <= 0) {
@@ -20,53 +21,49 @@ class ClasificaHabitosService
             ];
         }
 
-        $categorias = $this->repository->obtenerCategorias($juegoId);
-        $items = $this->repository->obtenerItems($juegoId);
+        $data = $this->repository->obtenerJuegoCompleto($juegoId);
 
         return [
             'success' => true,
-            'data' => [
-                'categorias' => $categorias,
-                'items' => $items
-            ]
+            'data' => $data
         ];
     }
 
-    public function crearCategoria(array $data): array
+    public function crearJuegoCompleto(array $data): array
     {
-        if (empty($data['nombre']) || empty($data['juego_id'])) {
+        if (empty($data['juego_id']) || empty($data['categorias']) || empty($data['items'])) {
             return [
                 'success' => false,
                 'message' => 'Datos incompletos'
             ];
         }
 
-        $resultado = $this->repository->crearCategoria($data);
+        $resultado = $this->repository->crearJuegoCompleto($data);
 
         return [
             'success' => $resultado,
             'message' => $resultado
-                ? 'Categoría creada'
-                : 'Error al crear categoría'
+                ? 'Juego creado correctamente'
+                : 'Error al crear el juego'
         ];
     }
 
-    public function crearItem(array $data): array
+    public function actualizarJuegoCompleto(array $data): array
     {
-        if (empty($data['texto']) || empty($data['categoria_correcta_id'])) {
+        if (empty($data['juego_id']) || empty($data['categorias']) || empty($data['items'])) {
             return [
                 'success' => false,
                 'message' => 'Datos incompletos'
             ];
         }
 
-        $resultado = $this->repository->crearItem($data);
+        $resultado = $this->repository->actualizarJuegoCompleto($data);
 
         return [
             'success' => $resultado,
             'message' => $resultado
-                ? 'Item creado'
-                : 'Error al crear item'
+                ? 'Juego actualizado correctamente'
+                : 'Error al actualizar el juego'
         ];
     }
 }

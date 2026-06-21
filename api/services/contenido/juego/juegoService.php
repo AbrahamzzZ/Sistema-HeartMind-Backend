@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../repositories/contenido/juego/juegoRepository.php';
+require_once __DIR__ . '/../../../repositories/contenido/juego/juegoRepository.php';
 
 class JuegoService
 {

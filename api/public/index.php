@@ -32,6 +32,10 @@ switch ($ruta) {
         require_once __DIR__ . '/../routes/contenidos.php';
         break;
 
+    case 'juegos':
+        require_once __DIR__ . '/../routes/juegos.php';
+        break;
+
     default:
         http_response_code(404);
 

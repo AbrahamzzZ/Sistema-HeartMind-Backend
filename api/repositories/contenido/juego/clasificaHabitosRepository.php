@@ -9,52 +9,105 @@ class ClasificaHabitosRepository
         $this->db = $db;
     }
 
-    public function obtenerCategorias(int $juegoId): array
+    public function obtenerJuegoCompleto(int $juegoId): array
     {
-        $sql = "
+        $sqlCategorias = "
             SELECT *
             FROM juego_categorias
             WHERE juego_id = :juego_id
+            ORDER BY orden ASC
         ";
 
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->db->prepare($sqlCategorias);
         $stmt->execute(['juego_id' => $juegoId]);
+        $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function crearCategoria(array $data): bool
-    {
-        $sql = "
-            INSERT INTO juego_categorias (juego_id, nombre)
-            VALUES (:juego_id, :nombre)
+        $sqlItems = "
+            SELECT *
+            FROM juego_items
+            WHERE juego_id = :juego_id
+            ORDER BY orden ASC
         ";
 
-        return $this->db->prepare($sql)->execute($data);
-    }
-
-    public function obtenerItems(int $juegoId): array
-    {
-        $sql = "
-            SELECT i.*, c.nombre AS categoria
-            FROM juego_items i
-            JOIN juego_categorias c ON i.categoria_correcta_id = c.id
-            WHERE i.juego_id = :juego_id
-        ";
-
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->db->prepare($sqlItems);
         $stmt->execute(['juego_id' => $juegoId]);
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return [
+            'categorias' => $categorias,
+            'items' => $items
+        ];
     }
 
-    public function crearItem(array $data): bool
+    public function crearJuegoCompleto(array $data): bool
     {
-        $sql = "
-            INSERT INTO juego_items (juego_id, texto, categoria_correcta_id)
-            VALUES (:juego_id, :texto, :categoria_correcta_id)
-        ";
+        try {
+            $this->db->beginTransaction();
 
-        return $this->db->prepare($sql)->execute($data);
+            $categorias = $data['categorias'];
+            $items = $data['items'];
+            $juegoId = $data['juego_id'];
+            $categoriaMap = [];
+
+            foreach ($categorias as $index => $cat) {
+
+                $sql = "
+                    INSERT INTO juego_categorias (juego_id, nombre, orden)
+                    VALUES (:juego_id, :nombre, :orden)
+                ";
+
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute([
+                    'juego_id' => $juegoId,
+                    'nombre' => $cat['nombre'],
+                    'orden' => $index
+                ]);
+
+                $categoriaId = $this->db->lastInsertId();
+                $categoriaMap[$index] = $categoriaId;
+            }
+
+            foreach ($items as $index => $item) {
+
+                $sql = "
+                    INSERT INTO juego_items
+                    (juego_id, texto, categoria_correcta_id, orden)
+                    VALUES
+                    (:juego_id, :texto, :categoria_correcta_id, :orden)
+                ";
+
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute([
+                    'juego_id' => $juegoId,
+                    'texto' => $item['texto'],
+                    'categoria_correcta_id' => $categoriaMap[$item['categoria_index']],
+                    'orden' => $index
+                ]);
+            }
+
+            $this->db->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            return false;
+        }
+    }
+
+    public function actualizarJuegoCompleto(array $data): bool
+    {
+        try {
+            $this->db->beginTransaction();
+            $juegoId = $data['juego_id'];
+            $this->db->prepare("DELETE FROM juego_items WHERE juego_id = :id")->execute(['id' => $juegoId]);
+            $this->db->prepare("DELETE FROM juego_categorias WHERE juego_id = :id")->execute(['id' => $juegoId]);
+            $this->crearJuegoCompleto($data);
+            $this->db->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            return false;
+        }
     }
 }
