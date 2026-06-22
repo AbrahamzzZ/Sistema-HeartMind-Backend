@@ -26,7 +26,6 @@ $juegoController = new JuegoController(new JuegoService(new JuegoRepository($db)
 $sesionController = new JuegoSesionController(new JuegoSesionService(new JuegoSesionRepository($db)));
 $clasificaController = new ClasificaHabitosController(new ClasificaHabitosService(new ClasificaHabitosRepository($db)));
 $memoriaController = new MemoriaCardiacaController(new MemoriaCardiacaService(new MemoriaCardiacaRepository($db)));
-$froggyController = new FroggyCardioController(new FroggyCardioService(new FroggyCardioRepository($db)));
 
 $method = $_SERVER['REQUEST_METHOD'];
 $accion = $_GET['accion'] ?? null;
@@ -86,13 +85,13 @@ switch ($method) {
         }
 
         // clasifica
-        if ($accion === 'categoria') {
-            $clasificaController->crearCategoria();
+        if ($accion === 'clasifica-crear-completo') {
+            $clasificaController->crearJuegoCompleto();
             break;
         }
 
-        if ($accion === 'item') {
-            $clasificaController->crearItem();
+        if ($accion === 'clasifica-actualizar-completo') {
+            $clasificaController->actualizarJuegoCompleto();
             break;
         }
 
