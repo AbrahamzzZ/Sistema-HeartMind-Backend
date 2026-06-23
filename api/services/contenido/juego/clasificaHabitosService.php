@@ -31,7 +31,7 @@ class ClasificaHabitosService
 
     public function crearJuegoCompleto(array $data): array
     {
-        if (empty($data['juegoId']) || empty($data['categorias']) || empty($data['items'])) {
+        if (empty($data['juego_id']) || empty($data['categorias']) || empty($data['items'])) {
             return [
                 'success' => false,
                 'message' => 'Datos incompletos'
