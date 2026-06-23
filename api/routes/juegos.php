@@ -73,6 +73,12 @@ switch ($method) {
 
     case 'POST':
 
+        // juegos
+        if ($accion === 'crear-juego') {
+            $juegoController->crearJuego();
+            break;
+        }
+
         // sesión de juego
         if ($accion === 'iniciar') {
             $sesionController->iniciarJuego();
