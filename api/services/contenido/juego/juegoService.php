@@ -48,20 +48,31 @@ class JuegoService
 
     public function crearJuego(array $data): array
     {
-        if (empty($data['nombre']) || empty($data['codigo']) || empty($data['tipo'])) {
+        try {
+
+            if (empty($data['nombre']) || empty($data['codigo']) || empty($data['tipo'])) {
+                return [
+                    'success' => false,
+                    'message' => 'Datos incompletos'
+                ];
+            }
+
+            $juegoId = $this->repository->crear($data);
+
+            return [
+                'success' => true,
+                'message' => 'Juego creado correctamente',
+                'data' => [
+                    'id' => $juegoId
+                ]
+            ];
+
+        } catch (Exception $e) {
+
             return [
                 'success' => false,
-                'message' => 'Datos incompletos'
+                'message' => $e->getMessage()
             ];
         }
-
-        $resultado = $this->repository->crear($data);
-
-        return [
-            'success' => $resultado,
-            'message' => $resultado
-                ? 'Juego creado correctamente'
-                : 'Error al crear juego'
-        ];
     }
 }
