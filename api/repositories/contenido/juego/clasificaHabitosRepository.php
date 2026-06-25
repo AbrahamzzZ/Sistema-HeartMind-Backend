@@ -9,31 +9,37 @@ class ClasificaHabitosRepository
         $this->db = $db;
     }
 
-    public function obtenerJuegoCompleto(int $juegoId): array
+  public function obtenerJuegoCompleto(int $juegoId): array
     {
+        $sqlJuego = "SELECT nombre, codigo, descripcion FROM juegos WHERE id = :id";
+        $stmtJuego = $this->db->prepare($sqlJuego);
+        $stmtJuego->execute(['id' => $juegoId]);
+        $juego = $stmtJuego->fetch(PDO::FETCH_ASSOC);
+
         $sqlCategorias = "
-            SELECT *
+            SELECT id, nombre
             FROM juego_categorias
             WHERE juego_id = :juego_id
             ORDER BY orden ASC
         ";
-
         $stmt = $this->db->prepare($sqlCategorias);
         $stmt->execute(['juego_id' => $juegoId]);
         $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $sqlItems = "
-            SELECT *
+            SELECT id, texto, categoria_correcta_id
             FROM juego_items
             WHERE juego_id = :juego_id
             ORDER BY orden ASC
         ";
-
         $stmt = $this->db->prepare($sqlItems);
         $stmt->execute(['juego_id' => $juegoId]);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return [
+            'nombre' => $juego['nombre'],
+            'codigo' => $juego['codigo'],
+            'descripcion' => $juego['descripcion'],
             'categorias' => $categorias,
             'items' => $items
         ];
@@ -80,7 +86,7 @@ class ClasificaHabitosRepository
                 $stmt->execute([
                     'juego_id' => $juegoId,
                     'texto' => $item['texto'],
-                    'categoria_correcta_id' => $categoriaMap[$item['categoria_index']],
+                    'categoria_correcta_id' => $categoriaMap[$item['categoria_correcta_id']],
                     'orden' => $index
                 ]);
             }

@@ -36,7 +36,7 @@ class JuegoRepository
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
-    public function crear(array $data): bool
+    public function crear(array $data): int
     {
         $sql = "
             INSERT INTO juegos (nombre, codigo, descripcion, tipo)
@@ -45,11 +45,13 @@ class JuegoRepository
 
         $stmt = $this->db->prepare($sql);
 
-        return $stmt->execute([
+        $stmt->execute([
             'nombre' => $data['nombre'],
             'codigo' => $data['codigo'],
             'descripcion' => $data['descripcion'] ?? null,
             'tipo' => $data['tipo']
         ]);
+
+        return (int) $this->db->lastInsertId();
     }
 }
