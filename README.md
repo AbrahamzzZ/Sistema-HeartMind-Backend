@@ -84,7 +84,7 @@ El contenedor PHP utiliza variables de entorno definidas en `docker-compose.yml`
 
 ```bash
 git clone https://github.com/AbrahamzzZ/Sistema-HeartMind-Backend 
-cd "Sistema HeartMind Backend"
+cd "Sistema-HeartMind-Backend"
 ```
 
 ## Levantar el proyecto con Docker
