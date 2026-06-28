@@ -1,150 +1,227 @@
 <?php
 
-require_once __DIR__ . '/../models/evaluacion/EvaluacionRiesgo.php';
-require_once __DIR__ . '/../repositories/evaluacion/EvaluacionRiesgoRepository.php';
+require_once __DIR__ . '/../models/evaluacion/evaluacionRiesgo.php';
+require_once __DIR__ . '/../repositories/evaluacion/evaluacionRiesgoRepository.php';
+require_once __DIR__ . '/../validator/exceptions/mlServiceException.php';
+require_once __DIR__ . '/../validator/exceptions/evaluacionException.php';
 
 class EvaluacionRiesgoService
 {
     private EvaluacionRiesgoRepository $repository;
+    private string $mlServiceUrl;
 
-    public function __construct(
-        EvaluacionRiesgoRepository $repository
-    ) {
+    public function __construct(EvaluacionRiesgoRepository $repository)
+    {
         $this->repository = $repository;
+        $this->mlServiceUrl = getenv('ML_SERVICE_URL') ?: 'http://ml-service:5000';
     }
 
     public function evaluar(array $datos): array {
-        $imc = $this->calcularImc($datos['peso'], $datos['altura']);
-        $puntaje = $this->calcularPuntaje($datos, $imc);
-        $riesgo = $this->determinarRiesgo($puntaje);
-        $recomendaciones = $this->generarRecomendaciones($riesgo);
-        $evaluacion = new EvaluacionRiesgo([
-            'usuarioId' => $datos['usuarioId'],
-            'edad' => $datos['edad'],
-            'peso' => $datos['peso'],
-            'altura' => $datos['altura'],
-            'imc' => $imc,
-            'presionSistolica' => $datos['presionSistolica'],
-            'presionDiastolica' => $datos['presionDiastolica'],
-            'nivelColesterol' => $datos['nivelColesterol'],
-            'fumador' => $datos['fumador'],
-            'diabetico' => $datos['diabetico'],
-            'actividadFisica' => $datos['actividadFisica'],
-            'antecedentesFamiliares' => $datos['antecedentesFamiliares'],
-            'puntaje' => $puntaje,
-            'resultadoRiesgo' => $riesgo
-        ]);
+        try {
+            $this->validarDatos($datos);
+            $altura_metros = $datos['altura'] / 100;
+            $imc = $datos['peso'] / ($altura_metros ** 2);
+            $nivelColesterol = $this->mapearColesterol($datos['nivelColesterol'] ?? 180);
+            $glucosa = $this->mapearGlucosa($datos['glucosa'] ?? 1);
 
-        $this->repository->guardar($evaluacion);
+            $respuestaML = $this->llamarML([
+                'edad' => (int)$datos['edad'],
+                'genero' => (int)($datos['genero'] ?? 1),
+                'altura' => (int)($datos['altura'] * 100),
+                'peso' => (float)$datos['peso'],
+                'presionSistolica' => (int)$datos['presionSistolica'],
+                'presionDiastolica' => (int)$datos['presionDiastolica'],
+                'colesterol' => $nivelColesterol,
+                'glucosa' => $glucosa,
+                'fumador' => (int)(bool)$datos['fumador'],
+                'alcohol' => (int)($datos['alcohol'] ?? 0),
+                'actividadFisica' => (int)(bool)$datos['actividadFisica']
+            ]);
 
-        return [
-            'imc' => $imc,
-            'puntaje' => $puntaje,
-            'resultadoRiesgo' => $riesgo,
-            'recomendaciones' => $recomendaciones
-        ];
+            $recomendaciones = $this->generarRecomendaciones($datos, $respuestaML['riesgo']);
+
+            $evaluacion = new EvaluacionRiesgo([
+                'usuarioId' => $datos['usuarioId'],
+                'edad' => $datos['edad'],
+                'genero' => (int)($datos['genero'] ?? 1),
+                'altura' => (int)$datos['altura'],
+                'peso' => (float)$datos['peso'],
+                'imc' => round($imc, 2),
+                'presionSistolica' => (int)$datos['presionSistolica'],
+                'presionDiastolica' => (int)$datos['presionDiastolica'],
+                'nivelColesterol' => $nivelColesterol,
+                'glucosa' => $glucosa,
+                'fumador' => (bool)$datos['fumador'],
+                'alcohol' => (bool)($datos['alcohol'] ?? false),
+                'actividadFisica' => (bool)$datos['actividadFisica'],
+                'probabilidadRiesgo' => $respuestaML['probabilidad'],
+                'resultadoRiesgo' => $respuestaML['riesgo'],
+                'recomendaciones' => json_encode($recomendaciones)
+            ]);
+
+            $this->repository->guardar($evaluacion);
+
+            return [
+                'success' => true,
+                'data' => [
+                    'imc' => round($imc, 2),
+                    'probabilidadRiesgo' => $respuestaML['probabilidad'],
+                    'porcentaje' => $respuestaML['porcentaje'],
+                    'resultadoRiesgo' => $respuestaML['riesgo'],
+                    'recomendaciones' => $recomendaciones
+                ]
+            ];
+
+        } catch (MLServiceException $e) {
+            error_log("ML Service Error: " . $e->getMessage());
+            return ['success' => false, 'message' => $e->getMessage(), 'code' => $e->getCode()];
+        } catch (Exception $e) {
+            error_log("Error inesperado: " . $e->getMessage());
+            return ['success' => false, 'message' => "Error inesperado en la evaluación"];
+        }
     }
 
     public function obtenerHistorial(int $usuarioId): array {
-        return $this->repository->obtenerPorUsuario($usuarioId);
+        try {
+            $historial = $this->repository->obtenerPorUsuario($usuarioId);
+            
+            return [
+                'success' => true,
+                'data' => $historial
+            ];
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
-    public function obtenerHistoriales(): array{
-        return $this->repository->obtenerTodos();
+    public function obtenerHistoriales(): array {
+        try {
+            $historiales = $this->repository->obtenerTodos();
+            
+            return [
+                'success' => true,
+                'data' => $historiales
+            ];
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
-    private function calcularImc(float $peso, float $altura): float {
-        return round($peso / ($altura * $altura), 2);
+    private function llamarML(array $datos): array {
+        $ch = curl_init($this->mlServiceUrl . '/predecir');
+        
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($datos));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error) {
+            throw new MLServiceException("Error conectando con ML Service: $error", 500);
+        }
+
+        if ($httpCode !== 200) {
+            error_log("ML Service HTTP $httpCode: $response");
+            throw new MLServiceException("Error ML Service (HTTP $httpCode)", $httpCode);
+        }
+
+        $resultado = json_decode($response, true);
+
+        if (!isset($resultado['success']) || !$resultado['success']) {
+            throw new MLServiceException("Error en predicción: " . ($resultado['error'] ?? 'Desconocido'), 400);
+        }
+
+        return $resultado;
     }
 
-    private function calcularPuntaje(array $datos, float $imc): int {
-        $puntaje = 0;
-
-        // Edad
-        if ($datos['edad'] >= 60) {
-            $puntaje += 3;
-        } elseif ($datos['edad'] >= 40) {
-            $puntaje += 2;
+    private function mapearColesterol(int $valor): int {
+        if ($valor < 200) {
+            return 1;
         }
 
-        // IMC
-        if ($imc >= 30) {
-            $puntaje += 2;
-        } elseif ($imc >= 25) {
-            $puntaje += 1;
+        if ($valor < 240) {
+            return 2;
         }
 
-        // Presión arterial
-        if ($datos['presionSistolica'] >= 140) {
-            $puntaje += 2;
-        } elseif ($datos['presionSistolica'] >= 120) {
-            $puntaje += 1;
+        return 3;
+    }
+
+    private function mapearGlucosa(int $valor): int {
+        if ($valor < 100) {
+            return 1;
         }
 
-        // Colesterol
-        if ($datos['nivelColesterol'] >= 200) {
-            $puntaje += 2;
+        if ($valor < 126) {
+            return 2;
         }
 
-        // Fumador
-        if ($datos['fumador']) {
-            $puntaje += 3;
+        return 3;
+    }
+
+    private function generarRecomendaciones(array $datos, string $riesgo): array {
+        $recomendaciones = [];
+
+        if ($riesgo === 'Alto') {
+            $recomendaciones[] = "Consulte inmediatamente con su cardiólogo.";
         }
 
-        // Diabético
-        if ($datos['diabetico']) {
-            $puntaje += 3;
+        if ($riesgo === 'Moderado') {
+            $recomendaciones[] = "Aumente la actividad física semanal.";
         }
 
-        // Actividad física
+        if ($datos['presionSistolica'] > 130 || $datos['presionDiastolica'] > 80) {
+            $recomendaciones[] = "Monitoree regularmente su presión arterial.";
+        }
+
+        if (($datos['nivelColesterol'] ?? 180) > 200) {
+            $recomendaciones[] = "Reduzca grasas saturadas y aumente fibra.";
+        }
+
         if (!$datos['actividadFisica']) {
-            $puntaje += 2;
+            $recomendaciones[] = "Aumente actividad física a 150 min/semana.";
         }
 
-        // Antecedentes familiares
-        if ($datos['antecedentesFamiliares']) {
-            $puntaje += 2;
+        if ($datos['fumador']) {
+            $recomendaciones[] = "Deje de fumar inmediatamente.";
         }
 
-        return $puntaje;
+        return array_slice($recomendaciones, 0, 4);
     }
 
-    private function determinarRiesgo(int $puntaje): string {
-        if ($puntaje <= 5) {
-            return 'Bajo';
+    private function validarDatos(array $datos): void {
+        $requeridos = [
+            'usuarioId', 'edad', 'peso', 'altura',
+            'presionSistolica', 'presionDiastolica',
+            'fumador', 'actividadFisica'
+        ];
+
+        foreach ($requeridos as $campo) {
+            if (!isset($datos[$campo])) {
+                throw new EvaluacionException("Campo requerido: $campo");
+            }
         }
 
-        if ($puntaje <= 10) {
-            return 'Moderado';
+        if ($datos['edad'] < 18 || $datos['edad'] > 120) {
+            throw new EvaluacionException("Edad debe estar entre 18 y 120 años");
         }
 
-        return 'Alto';
-    }
+        if ($datos['altura'] < 100 || $datos['altura'] > 220) {
+            throw new EvaluacionException("Altura debe estar entre 100 y 220 cm");
+        }
 
-    private function generarRecomendaciones(string $riesgo): array {
-
-        return match ($riesgo) {
-
-            'Bajo' => [
-                'Mantenga hábitos saludables.',
-                'Realice controles médicos periódicos.',
-                'Continúe realizando actividad física.'
-            ],
-
-            'Moderado' => [
-                'Aumente la actividad física semanal.',
-                'Controle regularmente su presión arterial.',
-                'Reduzca el consumo de grasas y sal.'
-            ],
-
-            'Alto' => [
-                'Acuda a una valoración médica.',
-                'Controle periódicamente su presión arterial.',
-                'Considere abandonar el tabaquismo.',
-                'Implemente actividad física bajo supervisión profesional.'
-            ],
-
-            default => []
-        };
+        if ($datos['peso'] < 30 || $datos['peso'] > 200) {
+            throw new EvaluacionException("Peso debe estar entre 30 y 200 kg");
+        }
     }
 }

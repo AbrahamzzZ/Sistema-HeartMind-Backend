@@ -16,35 +16,39 @@ class EvaluacionRiesgoRepository
             (
                 usuario_id,
                 edad,
-                peso,
+                genero,
                 altura,
+                peso,
                 imc,
                 presion_sistolica,
                 presion_diastolica,
                 nivel_colesterol,
+                glucosa,
                 fumador,
-                diabetico,
+                alcohol,
                 actividad_fisica,
-                antecedentes_familiares,
-                puntaje,
-                resultado_riesgo
+                probabilidad_riesgo,
+                resultado_riesgo,
+                recomendaciones
             )
             VALUES
             (
                 :usuario_id,
                 :edad,
-                :peso,
+                :genero,
                 :altura,
+                :peso,
                 :imc,
                 :presion_sistolica,
                 :presion_diastolica,
                 :nivel_colesterol,
+                :glucosa,
                 :fumador,
-                :diabetico,
+                :alcohol,
                 :actividad_fisica,
-                :antecedentes_familiares,
-                :puntaje,
-                :resultado_riesgo
+                :probabilidad_riesgo,
+                :resultado_riesgo,
+                :recomendaciones
             )
         ";
 
@@ -53,50 +57,89 @@ class EvaluacionRiesgoRepository
         return $stmt->execute([
             'usuario_id' => $evaluacion->usuarioId,
             'edad' => $evaluacion->edad,
-            'peso' => $evaluacion->peso,
+            'genero' => $evaluacion->genero,
             'altura' => $evaluacion->altura,
+            'peso' => $evaluacion->peso,
             'imc' => $evaluacion->imc,
             'presion_sistolica' => $evaluacion->presionSistolica,
             'presion_diastolica' => $evaluacion->presionDiastolica,
             'nivel_colesterol' => $evaluacion->nivelColesterol,
-            'fumador' => (int) $evaluacion->fumador,
-            'diabetico' =>  (int) $evaluacion->diabetico,
-            'actividad_fisica' => (int) $evaluacion->actividadFisica,
-            'antecedentes_familiares' => (int) $evaluacion->antecedentesFamiliares,
-            'puntaje' => $evaluacion->puntaje,
-            'resultado_riesgo' => $evaluacion->resultadoRiesgo
+            'glucosa' => $evaluacion->glucosa,
+            'fumador' => (int)$evaluacion->fumador,
+            'alcohol' => (int)$evaluacion->alcohol,
+            'actividad_fisica' => (int)$evaluacion->actividadFisica,
+            'probabilidad_riesgo' => $evaluacion->probabilidadRiesgo,
+            'resultado_riesgo' => $evaluacion->resultadoRiesgo,
+            'recomendaciones' => $evaluacion->recomendaciones
         ]);
     }
 
-    public function obtenerPorUsuario(int $usuarioId)
+    public function obtenerPorUsuario(int $usuarioId): array
     {
         $sql = "
-            SELECT *
+            SELECT
+                id,
+                usuario_id,
+                edad,
+                genero,
+                altura,
+                peso,
+                imc,
+                presion_sistolica,
+                presion_diastolica,
+                nivel_colesterol,
+                glucosa,
+                fumador,
+                alcohol,
+                actividad_fisica,
+                ROUND(probabilidad_riesgo * 100, 1) as porcentaje_riesgo,
+                resultado_riesgo,
+                recomendaciones,
+                fecha_evaluacion
             FROM evaluaciones_riesgo
             WHERE usuario_id = :usuario_id
             ORDER BY fecha_evaluacion DESC
         ";
 
         $stmt = $this->db->prepare($sql);
-
-        $stmt->execute([
-            'usuario_id' => $usuarioId
-        ]);
+        $stmt->execute(['usuario_id' => $usuarioId]);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function obtenerTodos(){
+    public function obtenerTodos(): array
+    {
         $sql = "
-            SELECT *
+            SELECT
+                id,
+                usuario_id,
+                edad,
+                imc,
+                ROUND(probabilidad_riesgo * 100, 1) as porcentaje_riesgo,
+                resultado_riesgo,
+                fecha_evaluacion
             FROM evaluaciones_riesgo
             ORDER BY fecha_evaluacion DESC
         ";
 
         $stmt = $this->db->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-        return $stmt->fetchAll(
-            PDO::FETCH_ASSOC
-        );
+    public function obtenerUltimaEvaluacion(int $usuarioId): ?array
+    {
+        $sql = "
+            SELECT *
+            FROM evaluaciones_riesgo
+            WHERE usuario_id = :usuario_id
+            ORDER BY fecha_evaluacion DESC
+            LIMIT 1
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['usuario_id' => $usuarioId]);
+        
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $resultado ?: null;
     }
 }

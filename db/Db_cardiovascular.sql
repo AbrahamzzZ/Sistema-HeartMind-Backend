@@ -22,24 +22,25 @@ CREATE TABLE evaluaciones_riesgo (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
     edad INT NOT NULL,
-    peso DECIMAL(5,2) NOT NULL,
-    altura DECIMAL(4,2) NOT NULL,
-    imc DECIMAL(5,2),
+    genero INT NOT NULL,        
+    altura INT NOT NULL,                
+    peso DECIMAL(5,2) NOT NULL,            
     presion_sistolica INT NOT NULL,
     presion_diastolica INT NOT NULL,
-    nivel_colesterol DECIMAL(5,2),
+    nivel_colesterol INT NOT NULL DEFAULT 1,
+    glucosa INT NOT NULL DEFAULT 1,     
     fumador BOOLEAN DEFAULT FALSE,
-    diabetico BOOLEAN DEFAULT FALSE,
+    alcohol BOOLEAN DEFAULT FALSE,
     actividad_fisica BOOLEAN DEFAULT FALSE,
-    antecedentes_familiares BOOLEAN DEFAULT FALSE,
-    puntaje INT NOT NULL,
+    imc DECIMAL(5,2),
+    probabilidad_riesgo DECIMAL(5,3), 
     resultado_riesgo ENUM('Bajo','Moderado','Alto') NOT NULL,
     recomendaciones TEXT,
     fecha_evaluacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+    
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    INDEX idx_usuario_fecha (usuario_id, fecha_evaluacion)
 );
-
 -- =====================================
 -- CONTENIDOS EDUCATIVOS
 -- =====================================
