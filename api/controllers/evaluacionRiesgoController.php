@@ -6,7 +6,6 @@ class EvaluacionRiesgoController
 {
     private const CONTENT_TYPE_JSON = 'Content-Type: application/json';
     private const FILE_GET_CONTENTS = 'php://input';
-
     private EvaluacionRiesgoService $service;
 
     public function __construct(
@@ -15,66 +14,30 @@ class EvaluacionRiesgoController
         $this->service = $service;
     }
 
-    public function evaluar(int $usuarioId): void
-    {
+    public function evaluar(int $usuarioId): void{
         header(self::CONTENT_TYPE_JSON);
-
         $datos = json_decode(file_get_contents(self::FILE_GET_CONTENTS), true);
 
         if (!$datos) {
-
             http_response_code(400);
-
-            echo json_encode([
-                'mensaje' => 'Datos inválidos.'
-            ]);
-
+            echo json_encode(['mensaje' => 'Datos inválidos.']);
             return;
         }
 
         $datos['usuarioId'] = $usuarioId;
         $resultado = $this->service->evaluar($datos);
-
-        echo json_encode([
-            'success' => true,
-            'data' => $resultado
-        ]);
+        echo json_encode($resultado);
     }
 
-    public function obtenerHistorial(
-        int $usuarioId
-    ): void {
-
+    public function obtenerHistorial(int $usuarioId): void {
         header(self::CONTENT_TYPE_JSON);
-
-        $evaluaciones = $this->service->obtenerHistorial($usuarioId);
-
-        $response = [
-            'success' => true,
-            'data' => $evaluaciones
-        ];
-
-        if (empty($evaluaciones)) {
-            $response['message'] = 'No hay información que mostrar.';
-        }
-
-        echo json_encode($response);
+        $resultado = $this->service->obtenerHistorial($usuarioId);
+        echo json_encode($resultado);
     }
 
-    public function obtenerHistoriales(){
+    public function obtenerHistoriales(): void {
         header(self::CONTENT_TYPE_JSON);
-
-        $evaluaciones = $this->service->ObtenerHistoriales();
-
-        $response = [
-            'success' => true,
-            'data' => $evaluaciones
-        ];
-
-        if (empty($evaluaciones)) {
-            $response['message'] = 'No hay información que mostrar.';
-        }
-
-        echo json_encode($response);
+        $resultado = $this->service->obtenerHistoriales();
+        echo json_encode($resultado);
     }
 }
