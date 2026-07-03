@@ -2,7 +2,7 @@
 
 ## Descripción
 
-Este repositorio contiene el backend del proyecto Sistema HeartMind. La aplicación está desarrollada en PHP y se ejecuta dentro de un contenedor Docker que se conecta a una base de datos MySQL. El backend expone una API REST para gestionar usuarios, evaluaciones de riesgo, cuestionarios, contenidos educativos y el historial de resultados.
+Este repositorio contiene el backend del proyecto Sistema HeartMind. La aplicación está desarrollada en PHP y se ejecuta dentro de un contenedor Docker que se conecta a una base de datos MySQL. El backend expone una API REST para gestionar usuarios, evaluaciones de riesgo, cuestionarios, contenidos educativos, juegos interactivos (clasificación) y el historial de resultados. Además, integra un modelo supervisado de machine learning para la predicción de riesgo cardiovascular.
 
 ## Arquitectura del backend
 
@@ -40,6 +40,18 @@ El backend sigue una arquitectura modular con capas bien definidas:
 - Consulta de contenidos educativos.
 - Gestión de contenidos (crear, editar, eliminar) reservada a admin.
 
+### Juegos educativos
+- **Juego de clasificación**: Juego interactivo donde los usuarios clasifican síntomas o comportamientos en categorías de riesgo cardiovascular.
+- Consulta de juegos disponibles.
+- Registro de resultados del juego por usuario.
+- Historial de desempeño en juegos.
+
+### Modelo supervisado
+- **Predicción de riesgo cardiovascular**: Modelo de machine learning entrenado con datos cardiovasculares.
+- Endpoints que integran el modelo para realizar predicciones en tiempo real.
+- Entrenamiento y evaluación del modelo en el módulo `ModeloSupervisado`.
+- Generación de reportes de predicción personalizados.
+
 ## Herramientas utilizadas
 
 - PHP 8.x (contenedor Docker con Apache/PHP)
@@ -55,9 +67,20 @@ El backend sigue una arquitectura modular con capas bien definidas:
 Backend/
 ├── api/
 │   ├── controllers/
+│   │   ├── usuarioController.php
+│   │   ├── cuestionarioController.php
+│   │   ├── evaluacionRiesgoController.php
+│   │   └── contenido/
+│   │       ├── contenidoController.php
+│   │       └── juego/  (Juego de clasificación)
 │   ├── helpers/
 │   ├── middleware/
 │   ├── models/
+│   │   ├── usuario.php
+│   │   ├── cuestionario/
+│   │   ├── evaluacion/
+│   │   └── contenido/
+│   │       └── juego/  (Modelos del juego)
 │   ├── repositories/
 │   ├── routes/
 │   ├── services/
@@ -68,6 +91,18 @@ Backend/
 ├── docker-compose.yml
 ├── .env
 └── README.md
+
+ModeloSupervisado/
+├── Entrenar/
+│   ├── train.py  (Script para entrenar el modelo)
+│   ├── requirements.txt
+│   ├── dockerfile.train
+│   └── modelos/  (Modelos entrenados guardados)
+└── Prediccion/
+    ├── predictor.py  (API para hacer predicciones)
+    ├── requirements.txt
+    ├── dockerfile
+    └── modelos/  (Modelos para usar en predicción)
 ```
 
 ## Variables y configuración
@@ -138,12 +173,30 @@ El volumen `./db` está montado en el contenedor MySQL como `docker-entrypoint-i
 - El resto de endpoints requieren token JWT en el encabezado `Authorization: Bearer <token>`.
 - El rol `Administrador` tiene acceso a todos los endpoints.
 - El rol `Usuario` solo puede:
-  - ver su perfil
-  - realizar y consultar evaluaciones
-  - consultar contenidos educativos
-  - consultar y resolver cuestionarios
-  - consultar su historial de cuestionarios
-- Los usuarios normales no pueden crear/editar/eliminar contenidos, cuestionarios, preguntas u opciones.
+  - Ver su perfil
+  - Realizar y consultar evaluaciones de riesgo
+  - Consultar contenidos educativos
+  - Consultar y resolver cuestionarios
+  - Consultar su historial de cuestionarios
+  - Jugar y consultar resultados en juegos educativos
+  - Obtener predicciones del modelo de riesgo cardiovascular
+- Los usuarios normales no pueden crear/editar/eliminar contenidos, cuestionarios, preguntas, opciones ni juegos.
+
+## Modelo supervisado de machine learning
+
+El proyecto incluye un modelo de machine learning para la predicción de riesgo cardiovascular ubicado en `ModeloSupervisado/`:
+
+### Módulo de entrenamiento (`ModeloSupervisado/Entrenar/`)
+- Script `train.py` para entrenar el modelo con datos cardiovasculares.
+- Archivo `cardio_train.csv` con el dataset de entrenamiento.
+- Dockerfile para ejecutar el entrenamiento en un contenedor aislado.
+- Los modelos entrenados se guardan en `modelos/` para su posterior uso.
+
+### Módulo de predicción (`ModeloSupervisado/Prediccion/`)
+- Script `predictor.py` que expone una API para realizar predicciones en tiempo real.
+- Utiliza los modelos entrenados para clasificar el riesgo cardiovascular de los usuarios.
+- Se ejecuta en un contenedor Docker independiente.
+- Integrado con el backend para proporcionar predicciones personalizadas a través de endpoints específicos.
 
 ## Notas finales
 
