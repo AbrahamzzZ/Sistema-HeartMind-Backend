@@ -169,32 +169,63 @@ class EvaluacionRiesgoService
         return 3;
     }
 
-    private function generarRecomendaciones(array $datos, string $riesgo): array {
+    private function generarRecomendaciones(array $datos, string $riesgo): array
+    {
         $recomendaciones = [];
 
-        if ($riesgo === 'Alto') {
-            $recomendaciones[] = "Consulte inmediatamente con su cardiólogo.";
-        }
+        switch ($riesgo) {
+            case 'Alto':
+                $recomendaciones[] = "Consulte lo antes posible con un médico o cardiólogo.";
+                $recomendaciones[] = "No ignore síntomas como dolor en el pecho o dificultad para respirar.";
+                $recomendaciones[] = "Siga estrictamente las indicaciones médicas y el tratamiento prescrito.";
+                break;
 
-        if ($riesgo === 'Moderado') {
-            $recomendaciones[] = "Aumente la actividad física semanal.";
+            case 'Moderado':
+                $recomendaciones[] = "Aumente la actividad física semanal.";
+                $recomendaciones[] = "Controle periódicamente su presión arterial.";
+                $recomendaciones[] = "Reduzca el consumo de sal, azúcar y grasas saturadas.";
+                break;
+
+            case 'Bajo':
+            default:
+                $recomendaciones[] = "Continúe manteniendo hábitos saludables para proteger su corazón.";
+                $recomendaciones[] = "Realice al menos 150 minutos de actividad física moderada por semana.";
+                $recomendaciones[] = "Mantenga una alimentación rica en frutas, verduras y cereales integrales.";
+                $recomendaciones[] = "Acuda a controles médicos preventivos al menos una vez al año.";
+                break;
         }
 
         if ($datos['presionSistolica'] > 130 || $datos['presionDiastolica'] > 80) {
-            $recomendaciones[] = "Monitoree regularmente su presión arterial.";
+            $recomendaciones[] = "Monitoree regularmente su presión arterial y siga las recomendaciones de su médico.";
         }
 
         if (($datos['nivelColesterol'] ?? 180) > 200) {
-            $recomendaciones[] = "Reduzca grasas saturadas y aumente fibra.";
+            $recomendaciones[] = "Reduzca el consumo de grasas saturadas e incremente la ingesta de alimentos ricos en fibra.";
+        }
+
+        if (($datos['glucosa'] ?? 90) >= 126) {
+            $recomendaciones[] = "Controle sus niveles de glucosa y mantenga un seguimiento médico periódico.";
         }
 
         if (!$datos['actividadFisica']) {
-            $recomendaciones[] = "Aumente actividad física a 150 min/semana.";
+            $recomendaciones[] = "Incorpore al menos 150 minutos de actividad física moderada por semana.";
         }
 
         if ($datos['fumador']) {
-            $recomendaciones[] = "Deje de fumar inmediatamente.";
+            $recomendaciones[] = "Considere dejar de fumar para reducir significativamente el riesgo cardiovascular.";
         }
+
+        if (($datos['alcohol'] ?? false)) {
+            $recomendaciones[] = "Limite el consumo de bebidas alcohólicas para favorecer la salud cardiovascular.";
+        }
+
+        $imc = $datos['peso'] / pow(($datos['altura'] / 100), 2);
+
+        if ($imc >= 25) {
+            $recomendaciones[] = "Mantenga un peso saludable mediante una alimentación equilibrada y ejercicio regular.";
+        }
+
+        $recomendaciones = array_values(array_unique($recomendaciones));
 
         return array_slice($recomendaciones, 0, 4);
     }

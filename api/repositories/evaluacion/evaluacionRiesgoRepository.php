@@ -107,22 +107,33 @@ class EvaluacionRiesgoRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function obtenerTodos(): array
-    {
+    public function obtenerTodos(): array {
         $sql = "
             SELECT
                 id,
                 usuario_id,
                 edad,
+                genero,
+                altura,
+                peso,
                 imc,
-                ROUND(probabilidad_riesgo * 100, 1) as porcentaje_riesgo,
+                presion_sistolica,
+                presion_diastolica,
+                nivel_colesterol,
+                glucosa,
+                fumador,
+                alcohol,
+                actividad_fisica,
+                ROUND(probabilidad_riesgo * 100, 1) AS porcentaje_riesgo,
                 resultado_riesgo,
+                recomendaciones,
                 fecha_evaluacion
             FROM evaluaciones_riesgo
             ORDER BY fecha_evaluacion DESC
         ";
 
         $stmt = $this->db->query($sql);
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
