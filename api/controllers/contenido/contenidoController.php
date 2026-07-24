@@ -49,9 +49,14 @@ class ContenidoController
 
                 $cloudinary = new CloudinaryService();
                 if ($contenido->tipo === 'video') {
-                    $archivo = $cloudinary->subirVideo($_FILES['archivo']['tmp_name']);
+                    $archivo = $cloudinary->subirVideo(
+                        $_FILES['archivo']['tmp_name']
+                    );
                 } else {
-                    $archivo = $cloudinary->subirDocumento($_FILES['archivo']['tmp_name']);
+                    $archivo = $cloudinary->subirDocumento(
+                        $_FILES['archivo']['tmp_name'],
+                        $_FILES['archivo']['name']
+                    );
                 }
 
                 $contenido->url = $archivo['secure_url'];
