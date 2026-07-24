@@ -12,7 +12,8 @@ CREATE TABLE usuarios (
     rol ENUM('Administrador','Usuario') DEFAULT 'Usuario',
     edad INT,
     genero ENUM('M','F','Otro'),
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_usuarios_correo (correo)
 );
 
 -- =====================================
@@ -39,8 +40,10 @@ CREATE TABLE evaluaciones_riesgo (
     fecha_evaluacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-    INDEX idx_usuario_fecha (usuario_id, fecha_evaluacion)
+    INDEX idx_usuario_fecha (usuario_id, fecha_evaluacion),
+    INDEX idx_resultado_riesgo (resultado_riesgo)
 );
+
 -- =====================================
 -- CONTENIDOS EDUCATIVOS
 -- =====================================
@@ -72,11 +75,13 @@ CREATE TABLE contenidos (
     ) NOT NULL,
     public_id VARCHAR(255),
     url VARCHAR(500),
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_contenidos_tipo (tipo),
+    INDEX idx_contenidos_categoria (categoria)
 );
 
 -- =====================================
--- CUESTIONARIOS
+-- CUESTIONARIOS EDUCATIVOS
 -- =====================================
 CREATE TABLE cuestionarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -89,7 +94,8 @@ CREATE TABLE preguntas_cuestionario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     cuestionario_id INT NOT NULL,
     pregunta TEXT NOT NULL,
-    FOREIGN KEY (cuestionario_id) REFERENCES cuestionarios(id) ON DELETE CASCADE
+    FOREIGN KEY (cuestionario_id) REFERENCES cuestionarios(id) ON DELETE CASCADE,
+    INDEX idx_preguntas_cuestionario (cuestionario_id)
 );
 
 CREATE TABLE opciones_respuesta (
@@ -97,7 +103,8 @@ CREATE TABLE opciones_respuesta (
     pregunta_id INT NOT NULL,
     texto_opcion VARCHAR(255) NOT NULL,
     es_correcta BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (pregunta_id) REFERENCES preguntas_cuestionario(id) ON DELETE CASCADE
+    FOREIGN KEY (pregunta_id) REFERENCES preguntas_cuestionario(id) ON DELETE CASCADE,
+    INDEX idx_opciones_pregunta (pregunta_id)
 );
 
 CREATE TABLE resultados_cuestionario (
@@ -108,11 +115,14 @@ CREATE TABLE resultados_cuestionario (
     fecha_realizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-    FOREIGN KEY (cuestionario_id) REFERENCES cuestionarios(id) ON DELETE CASCADE
+    FOREIGN KEY (cuestionario_id) REFERENCES cuestionarios(id) ON DELETE CASCADE,
+    INDEX idx_resultados_usuario (usuario_id),
+    INDEX idx_resultados_cuestionario (cuestionario_id),
+    INDEX idx_resultados_usuario_fecha (usuario_id, fecha_realizacion)
 );
 
 -- =====================================
--- JUEGOS
+-- JUEGOS EDUCATIVOS 
 -- =====================================
 CREATE TABLE juegos (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -124,47 +134,14 @@ CREATE TABLE juegos (
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =====================================
--- JUEGO SESIONES
--- =====================================
-CREATE TABLE juego_sesiones (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL,
-    juego_id INT NOT NULL,
-    puntaje INT DEFAULT 0,
-    tiempo_segundos INT DEFAULT NULL,
-    completado BOOLEAN DEFAULT FALSE,
-    fecha_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_fin TIMESTAMP NULL,
-
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-    FOREIGN KEY (juego_id) REFERENCES juegos(id) ON DELETE CASCADE
-);
-
--- =====================================
--- DETALLE DE RESULTADOS
--- =====================================
-CREATE TABLE juego_resultados_detalle (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    sesion_id INT NOT NULL,
-    juego_id INT NOT NULL,
-    item_id INT NULL,
-    respuesta_usuario TEXT,
-    es_correcto BOOLEAN DEFAULT NULL,
-
-    FOREIGN KEY (sesion_id) REFERENCES juego_sesiones(id) ON DELETE CASCADE,
-    FOREIGN KEY (juego_id) REFERENCES juegos(id) ON DELETE CASCADE
-);
-
--- =====================================
 -- CLASIFICA LOS HÁBITOS
--- =====================================
 CREATE TABLE juego_categorias (
     id INT AUTO_INCREMENT PRIMARY KEY,
     juego_id INT NOT NULL,
     nombre VARCHAR(100) NOT NULL,
     orden INT DEFAULT 0,
-    FOREIGN KEY (juego_id) REFERENCES juegos(id) ON DELETE CASCADE
+    FOREIGN KEY (juego_id) REFERENCES juegos(id) ON DELETE CASCADE,
+    INDEX idx_categorias_juego (juego_id)
 );
 
 CREATE TABLE juego_items (
@@ -174,12 +151,12 @@ CREATE TABLE juego_items (
     categoria_correcta_id INT NOT NULL,
     orden INT DEFAULT 0,
     FOREIGN KEY (juego_id) REFERENCES juegos(id) ON DELETE CASCADE,
-    FOREIGN KEY (categoria_correcta_id) REFERENCES juego_categorias(id)
+    FOREIGN KEY (categoria_correcta_id) REFERENCES juego_categorias(id),
+    INDEX idx_items_juego (juego_id),
+    INDEX idx_items_categoria (categoria_correcta_id)
 );
 
--- =====================================
 -- MEMORIA CARDÍACA
--- =====================================
 CREATE TABLE juego_memoria_cartas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     juego_id INT NOT NULL,
@@ -188,12 +165,6 @@ CREATE TABLE juego_memoria_cartas (
     par_id INT NOT NULL,
 
     FOREIGN KEY (juego_id) REFERENCES juegos(id) ON DELETE CASCADE,
-    FOREIGN KEY (par_id) REFERENCES juego_memoria_cartas(id)
+    INDEX idx_juego_memoria (juego_id),
+    INDEX idx_juego_par (juego_id, par_id)
 );
-
--- =====================================
--- ÍNDICES
--- =====================================
-CREATE INDEX idx_sesiones_usuario ON juego_sesiones(usuario_id);
-CREATE INDEX idx_sesiones_juego ON juego_sesiones(juego_id);
-CREATE INDEX idx_resultados_sesion ON juego_resultados_detalle(sesion_id);
