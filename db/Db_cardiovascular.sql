@@ -47,9 +47,29 @@ CREATE TABLE evaluaciones_riesgo (
 CREATE TABLE contenidos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
-    descripcion TEXT,
-    tipo ENUM('articulo','video','infografia') NOT NULL,
-    categoria ENUM('alimentacion','ejercicio','habito_saludable','advertencia') NOT NULL,
+    descripcion TEXT NOT NULL,
+    tipo ENUM(
+        'articulo',
+        'video',
+        'infografia',
+        'libro',
+        'guia',
+        'podcast',
+        'presentacion'
+    ) NOT NULL,
+    categoria ENUM(
+        'informativo',
+        'enfermedades_cardiovasculares',
+        'prevencion',
+        'factores_riesgo',
+        'alimentacion',
+        'ejercicio',
+        'habito_saludable',
+        'salud_cardiaca',
+        'rehabilitacion',
+        'bienestar',
+        'advertencia'
+    ) NOT NULL,
     public_id VARCHAR(255),
     url VARCHAR(500),
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
