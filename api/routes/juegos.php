@@ -8,10 +8,6 @@ require_once __DIR__ . '/../repositories/contenido/juego/juegoRepository.php';
 require_once __DIR__ . '/../services/contenido/juego/juegoService.php';
 require_once __DIR__ . '/../controllers/contenido/juego/juegoController.php';
 
-require_once __DIR__ . '/../repositories/contenido/juego/juegoSesionRepository.php';
-require_once __DIR__ . '/../services/contenido/juego/juegoSesionService.php';
-require_once __DIR__ . '/../controllers/contenido/juego/juegoSesionController.php';
-
 require_once __DIR__ . '/../repositories/contenido/juego/clasificaHabitosRepository.php';
 require_once __DIR__ . '/../services/contenido/juego/clasificaHabitosService.php';
 require_once __DIR__ . '/../controllers/contenido/juego/clasificaHabitosController.php';
@@ -23,7 +19,6 @@ require_once __DIR__ . '/../controllers/contenido/juego/memoriaCardiacaControlle
 
 $db = Conexion::obtenerConexion();
 $juegoController = new JuegoController(new JuegoService(new JuegoRepository($db)));
-$sesionController = new JuegoSesionController(new JuegoSesionService(new JuegoSesionRepository($db)));
 $clasificaController = new ClasificaHabitosController(new ClasificaHabitosService(new ClasificaHabitosRepository($db)));
 $memoriaController = new MemoriaCardiacaController(new MemoriaCardiacaService(new MemoriaCardiacaRepository($db)));
 
@@ -79,17 +74,6 @@ switch ($method) {
             break;
         }
 
-        // sesión de juego
-        if ($accion === 'iniciar') {
-            $sesionController->iniciarJuego();
-            break;
-        }
-
-        if ($accion === 'finalizar') {
-            $sesionController->finalizarJuego();
-            break;
-        }
-
         // clasifica
         if ($accion === 'clasifica-crear-completo') {
             $clasificaController->crearJuegoCompleto();
@@ -98,6 +82,17 @@ switch ($method) {
 
         if ($accion === 'clasifica-actualizar-completo') {
             $clasificaController->actualizarJuegoCompleto();
+            break;
+        }
+
+        // memoria
+        if ($accion === 'memoria-crear-completo') {
+            $memoriaController->crearJuegoCompleto($usuario);
+            break;
+        }
+
+        if ($accion === 'memoria-actualizar-completo') {
+            $memoriaController->actualizarJuegoCompleto($usuario);
             break;
         }
 

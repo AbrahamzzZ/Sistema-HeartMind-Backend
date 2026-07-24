@@ -16,23 +16,35 @@ class MemoriaCardiacaController
     public function obtenerCartas(int $juegoId): void
     {
         header(self::CONTENT_TYPE_JSON);
-        $resultado = $this->service->obtenerCartas($juegoId);
-
-        if (!$resultado['success']) {
+        
+        if ($juegoId <= 0) {
             http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'ID juego inválido']);
+            return;
         }
 
+        $resultado = $this->service->obtenerCartas($juegoId);
         echo json_encode($resultado);
     }
 
-    public function crearJuegoCompleto(): void
+    public function crearJuegoCompleto(array $usuario): void
     {
         header(self::CONTENT_TYPE_JSON);
+
+        if ($usuario['rol'] !== 'Administrador') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'No tienes permisos para crear juegos'
+            ]);
+            return;
+        }
+
         $datos = json_decode(file_get_contents(self::FILE_GET_CONTENTS), true);
 
         if (!$datos) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Datos inválidos']);
+            echo json_encode(['success' => false, 'message' => 'Datos JSON inválidos']);
             return;
         }
 
@@ -40,19 +52,31 @@ class MemoriaCardiacaController
 
         if (!$resultado['success']) {
             http_response_code(400);
+        } else {
+            http_response_code(201);
         }
 
         echo json_encode($resultado);
     }
 
-    public function actualizarJuegoCompleto(): void
+    public function actualizarJuegoCompleto(array $usuario): void
     {
         header(self::CONTENT_TYPE_JSON);
+
+        if ($usuario['rol'] !== 'Administrador') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'No tienes permisos para actualizar juegos'
+            ]);
+            return;
+        }
+
         $datos = json_decode(file_get_contents(self::FILE_GET_CONTENTS), true);
 
         if (!$datos) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Datos inválidos']);
+            echo json_encode(['success' => false, 'message' => 'Datos JSON inválidos']);
             return;
         }
 
