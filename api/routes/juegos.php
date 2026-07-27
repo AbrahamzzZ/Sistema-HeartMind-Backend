@@ -87,12 +87,19 @@ switch ($method) {
 
         // memoria
         if ($accion === 'memoria-crear-completo') {
-            $memoriaController->crearJuegoCompleto($usuario);
+            $memoriaController->crearJuegoCompleto();
             break;
         }
 
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Acción inválida']);
+        break;
+
+    case 'PUT':
+
+        // memoria
         if ($accion === 'memoria-actualizar-completo') {
-            $memoriaController->actualizarJuegoCompleto($usuario);
+            $memoriaController->actualizarJuegoCompleto();
             break;
         }
 

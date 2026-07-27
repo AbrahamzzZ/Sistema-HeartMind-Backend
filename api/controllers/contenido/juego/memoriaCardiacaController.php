@@ -27,18 +27,9 @@ class MemoriaCardiacaController
         echo json_encode($resultado);
     }
 
-    public function crearJuegoCompleto(array $usuario): void
+    public function crearJuegoCompleto(): void
     {
         header(self::CONTENT_TYPE_JSON);
-
-        if ($usuario['rol'] !== 'Administrador') {
-            http_response_code(403);
-            echo json_encode([
-                'success' => false,
-                'message' => 'No tienes permisos para crear juegos'
-            ]);
-            return;
-        }
 
         $datos = json_decode(file_get_contents(self::FILE_GET_CONTENTS), true);
 
@@ -59,19 +50,9 @@ class MemoriaCardiacaController
         echo json_encode($resultado);
     }
 
-    public function actualizarJuegoCompleto(array $usuario): void
+    public function actualizarJuegoCompleto(): void
     {
         header(self::CONTENT_TYPE_JSON);
-
-        if ($usuario['rol'] !== 'Administrador') {
-            http_response_code(403);
-            echo json_encode([
-                'success' => false,
-                'message' => 'No tienes permisos para actualizar juegos'
-            ]);
-            return;
-        }
-
         $datos = json_decode(file_get_contents(self::FILE_GET_CONTENTS), true);
 
         if (!$datos) {
