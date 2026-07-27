@@ -32,29 +32,11 @@ class MemoriaCardiacaService
             return ['success' => false, 'message' => 'Juego ID requerido'];
         }
 
-        if (count($data['pares']) > 10) {
-            return ['success' => false, 'message' => 'Máximo 10 pares permitidos'];
-        }
-
         foreach ($data['pares'] as $index => $par) {
             if (!isset($par['carta1']) || !isset($par['carta2'])) {
                 return [
                     'success' => false,
                     'message' => "Par $index incompleto: se requieren carta1 y carta2"
-                ];
-            }
-
-            if (empty(trim($par['carta1'])) || empty(trim($par['carta2']))) {
-                return [
-                    'success' => false,
-                    'message' => "Par $index tiene cartas vacías"
-                ];
-            }
-
-            if (strlen($par['carta1']) > 255 || strlen($par['carta2']) > 255) {
-                return [
-                    'success' => false,
-                    'message' => "Par $index excede 255 caracteres"
                 ];
             }
         }
@@ -63,8 +45,8 @@ class MemoriaCardiacaService
 
         return [
             'success' => $resultado,
-            'message' => $resultado 
-                ? 'Memoria creada correctamente' 
+            'message' => $resultado
+                ? 'Memoria creada correctamente'
                 : 'Error al crear memoria'
         ];
     }
@@ -81,8 +63,8 @@ class MemoriaCardiacaService
 
         return [
             'success' => $resultado,
-            'message' => $resultado 
-                ? 'Memoria actualizada correctamente' 
+            'message' => $resultado
+                ? 'Memoria actualizada correctamente'
                 : 'Error al actualizar memoria'
         ];
     }
